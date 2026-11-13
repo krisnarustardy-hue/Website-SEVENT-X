@@ -4,6 +4,7 @@ import { keyframes } from '@emotion/react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
+import Card from './card.jsx'
 
 const animGradasi = keyframes`
   0% { background-position: 0% 50%; }
@@ -46,11 +47,10 @@ function BukuInteraktif() {
     const t = state.clock.getElapsedTime()
 
     if (bookGroupRef.current) {
-      // 1. ANIMASI IDLE MURNI ATAS-BAWAH
-      // Angka 2 = kecepatan naik-turun, 0.14 = tinggi ayunannya
+      // Animasi idle murni atas-bawah
       bookGroupRef.current.position.y = Math.sin(t * 2) * 0.14
 
-      // 2. Kemiringan & skala halus saat di-hover
+      // Kemiringan & skala halus saat di-hover
       const targetRotY = hovered ? -0.15 : -0.45
       const targetRotX = hovered ? 0.32 : 0.22
       const targetScale = hovered ? 1.06 : 1.0
@@ -70,7 +70,7 @@ function BukuInteraktif() {
       )
     }
 
-    // 3. Sampul depan terbuka saat hover
+    // Sampul depan terbuka saat hover
     if (coverRef.current) {
       const targetCover = hovered ? -2.35 : 0
       coverRef.current.rotation.y = THREE.MathUtils.lerp(
@@ -80,7 +80,7 @@ function BukuInteraktif() {
       )
     }
 
-    // 4. Lembaran kertas terbuka susul-menyusul
+    // Lembaran kertas terbuka susul-menyusul
     pageRefs.current.forEach((page, i) => {
       if (!page) return
       const cfg = pageConfigs[i]
@@ -92,7 +92,7 @@ function BukuInteraktif() {
       )
     })
 
-    // 5. Cahaya hangat dari dalam buku saat terbuka
+    // Cahaya hangat dari dalam buku saat terbuka
     if (glowRef.current) {
       const targetGlow = hovered ? 2.5 : 0
       glowRef.current.intensity = THREE.MathUtils.lerp(
@@ -322,6 +322,22 @@ function App() {
           </HStack>
         </Flex>
       </Box>
+
+      {/* WADAH KARTU DI KIRI (SEJAJAR LURUS DENGAN NAVBAR) */}
+      <Flex
+        maxW="1200px"
+        minH="100vh"
+        mx="auto"
+        px={{ base: 4, md: 8 }}
+        align="center"
+        pos="relative"
+        zIndex={10}
+        pointerEvents="none"
+      >
+        <Box pointerEvents="auto">
+          <Card />
+        </Box>
+      </Flex>
 
       {/* WADAH PANGGUNG 3D BUKU */}
       <Box
