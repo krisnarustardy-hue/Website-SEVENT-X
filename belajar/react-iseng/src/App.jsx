@@ -11,469 +11,807 @@ import {
 } from '@chakra-ui/react'
 import Card from './card'
 
-const TOP_MENUS = ['Beranda', 'Fitur', 'Tentang']
+// Navigasi wajib tepat tiga menu dengan urutan: CuPI | History Track | Profile
+const NAV_ITEMS = ['CuPI', 'History Track', 'Profile']
 
-const NAV_DESTINATIONS = [
+const FOOD_CATEGORIES = [
   {
-    id: 'Beranda',
-    label: 'Beranda',
-    desc: 'Halaman utama & ringkasan proyek',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5z" />
-      </svg>
-    ),
+    id: 'cooked',
+    label: 'Makanan Matang & Lauk Siap Saji',
+    hint: 'Nasi, sup, olahan daging, ayam, ikan, tumisan sayur',
+    roomLimitHours: 2,
+    roomMaxHours: 4,
+    fridgeLimitHours: 72,
   },
   {
-    id: 'Dashboard',
-    label: 'Dashboard',
-    desc: 'Panel kontrol, metrik & aktivitas',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="7" height="9" rx="1.5" />
-        <rect x="14" y="3" width="7" height="5" rx="1.5" />
-        <rect x="14" y="12" width="7" height="9" rx="1.5" />
-        <rect x="3" y="16" width="7" height="5" rx="1.5" />
-      </svg>
-    ),
+    id: 'dairy_chilled',
+    label: 'Susu, Olahan Dingin & Masakan Bersantan',
+    hint: 'Susu cair, gulai/opor bersantan, keju lunak, puding susu',
+    roomLimitHours: 2,
+    roomMaxHours: 3,
+    fridgeLimitHours: 48,
   },
   {
-    id: 'Fitur',
-    label: 'Fitur Unggulan',
-    desc: 'Eksplorasi modul & kemampuan utama',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-      </svg>
-    ),
+    id: 'produce_cut',
+    label: 'Buah Kupas & Sayur Potong Segar',
+    hint: 'Buah potong, salad sayur segar, lalapan siap santap',
+    roomLimitHours: 2,
+    roomMaxHours: 4,
+    fridgeLimitHours: 48,
   },
   {
-    id: 'Analitik',
-    label: 'Analitik & Laporan',
-    desc: 'Grafik performa & data real-time',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="18" y1="20" x2="18" y2="10" />
-        <line x1="12" y1="20" x2="12" y2="4" />
-        <line x1="6" y1="20" x2="6" y2="14" />
-      </svg>
-    ),
-  },
-  {
-    id: 'Tentang',
-    label: 'Tentang Tim',
-    desc: 'Profil pembuat & informasi karya',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <line x1="12" y1="16" x2="12" y2="12" />
-        <line x1="12" y1="8" x2="12.01" y2="8" />
-      </svg>
-    ),
+    id: 'bakery_dry',
+    label: 'Roti, Kue & Makanan Kering',
+    hint: 'Roti tawar, kue tanpa isian krim basah, makanan panggang',
+    roomLimitHours: 24,
+    roomMaxHours: 48,
+    fridgeLimitHours: 120,
   },
 ]
 
-// Data awal simulasi lokal untuk Dashboard Siklus Residu
-const INITIAL_RESIDUE_LOGS = [
+const STORAGE_OPTIONS = [
   {
-    id: 'SR-101',
-    date: '14 Mei 2026, 08:30',
-    source: 'Pos Kumpul Sektor Utara',
-    category: 'Organik Basah',
-    volume: 42,
-    unit: 'kg',
-    stage: 'Pengolahan',
-    period: '7H',
+    id: 'fridge',
+    label: 'Lemari Pendingin / Kulkas (≤ 4°C)',
+    desc: 'Disimpan tertutup di rak dingin kulkas',
   },
   {
-    id: 'SR-102',
-    date: '14 Mei 2026, 09:45',
-    source: 'Unit Dapur Komunal A',
-    category: 'Minyak Residu',
-    volume: 18,
-    unit: 'kg',
-    stage: 'Pemilahan',
-    period: '7H',
+    id: 'room_covered',
+    label: 'Suhu Ruang — Wadah Tertutup',
+    desc: 'Di meja makan atau dapur dengan penutup rapat',
   },
   {
-    id: 'SR-103',
-    date: '13 Mei 2026, 16:15',
-    source: 'Sentra Olahan Pangan',
-    category: 'Ampas Organik',
-    volume: 64,
-    unit: 'kg',
-    stage: 'Pengolahan',
-    period: '7H',
+    id: 'room_open',
+    label: 'Suhu Ruang — Terbuka',
+    desc: 'Tanpa penutup atau terpapar udara ruang langsung',
   },
   {
-    id: 'SR-104',
-    date: '13 Mei 2026, 11:20',
-    source: 'Pos Kumpul Sektor Timur',
-    category: 'Serat & Kemasan',
-    volume: 15,
-    unit: 'kg',
-    stage: 'Residu Akhir',
-    period: '7H',
+    id: 'freezer',
+    label: 'Freezer Beku (≤ -18°C)',
+    desc: 'Disimpan dalam kondisi beku secara konsisten',
   },
   {
-    id: 'SR-105',
-    date: '12 Mei 2026, 14:10',
-    source: 'Warung Warga Blok C',
-    category: 'Minyak Residu',
-    volume: 24,
-    unit: 'kg',
-    stage: 'Pengumpulan',
-    period: '30H',
-  },
-  {
-    id: 'SR-106',
-    date: '10 Mei 2026, 10:05',
-    source: 'Kedai Kopi & Roti',
-    category: 'Ampas Organik',
-    volume: 38,
-    unit: 'kg',
-    stage: 'Residu Masuk',
-    period: '30H',
+    id: 'unknown',
+    label: 'Tidak Diketahui / Ragu',
+    desc: 'Riwayat tempat dan suhu penyimpanan tidak pasti',
   },
 ]
 
-const WEEKLY_TREND_SIMULATION = [
-  { label: 'Sen', masuk: 34, dimanfaatkan: 26 },
-  { label: 'Sel', masuk: 48, dimanfaatkan: 38 },
-  { label: 'Rab', masuk: 41, dimanfaatkan: 33 },
-  { label: 'Kam', masuk: 56, dimanfaatkan: 45 },
-  { label: 'Jum', masuk: 62, dimanfaatkan: 52 },
-  { label: 'Sab', masuk: 74, dimanfaatkan: 61 },
-  { label: 'Min', masuk: 52, dimanfaatkan: 44 },
+const SENSORY_CHECKS = [
+  {
+    id: 'odorChange',
+    label: 'Aroma asam, tengik, atau menyengat tidak wajar',
+    detail: 'Bau berbeda jelas dari aroma normal makanan tersebut',
+  },
+  {
+    id: 'textureChange',
+    label: 'Permukaan berlendir, berbusa, atau berair tidak normal',
+    detail: 'Tekstur terasa licin atau menggumpal saat diamati',
+  },
+  {
+    id: 'colorMoldChange',
+    label: 'Perubahan warna mencolok atau bercak menyerupai jamur',
+    detail: 'Titik putih, hijau, keabu-abuan, atau warna kusam ekstrem',
+  },
+  {
+    id: 'packagingSwollen',
+    label: 'Wadah menggembung atau tutup terdorong gas',
+    detail: 'Terdapat indikasi fermentasi atau gas di dalam wadah',
+  },
 ]
 
-// Komponen angka Count-Up satu kali saat mount / perubahan nilai target
-function AnimatedNumber({ value, duration = 650 }) {
-  const [displayValue, setDisplayValue] = useState(value)
-  const previousValueRef = useRef(0)
+// Data contoh awal yang diberi label eksplisit "Contoh data (Mode demo)"
+const INITIAL_HISTORY_DEMO = [
+  {
+    id: 'CUPI-DEMO-01',
+    isDemo: true,
+    createdAt: '24 Nov 2026, 18:20',
+    foodName: 'Ayam Gulai Santan Rumahan',
+    categoryId: 'dairy_chilled',
+    categoryLabel: 'Susu, Olahan Dingin & Masakan Bersantan',
+    durationHours: '5',
+    storageId: 'room_covered',
+    storageLabel: 'Suhu Ruang — Wadah Tertutup',
+    sensoryFlags: ['odorChange'],
+    sensoryUnknown: false,
+    imagePreview: null,
+    notes: 'Contoh skenario: sisa makan siang disimpan di meja makan sejak pukul 13.00.',
+    status: 'Risiko terindikasi',
+    summary:
+      'Makanan bersantan telah berada di suhu ruang selama 5 jam (melebihi batas acuan 2–3 jam) disertai perubahan aroma.',
+    timeStorageFactor:
+      'Penyimpanan suhu ruang selama 5 jam pada masakan bersantan melewati batas waktu aman di suhu ruang.',
+    sensoryFactor:
+      'Dilaporkan aroma asam/tidak wajar yang memperkuat indikasi penurunan mutu makanan.',
+    reasoning:
+      'Faktor durasi waktu di suhu ruang telah melampaui batas keamanan pangan, ditambah adanya tanda perubahan bau.',
+    recommendation:
+      'Disarankan untuk tidak mengonsumsi makanan ini. Pisahkan ke wadah sampah organik tertutup dan jangan dibagikan.',
+    wasteGuidance: null,
+  },
+  {
+    id: 'CUPI-DEMO-02',
+    isDemo: true,
+    createdAt: '24 Nov 2026, 12:40',
+    foodName: 'Sup Ayam Sayur Bening',
+    categoryId: 'cooked',
+    categoryLabel: 'Makanan Matang & Lauk Siap Saji',
+    durationHours: '16',
+    storageId: 'fridge',
+    storageLabel: 'Lemari Pendingin / Kulkas (≤ 4°C)',
+    sensoryFlags: [],
+    sensoryUnknown: false,
+    imagePreview: null,
+    notes: 'Contoh skenario: disimpan di wadah kedap udara di dalam kulkas setelah uap panas hilang.',
+    status: 'Perlu perhatian',
+    summary:
+      'Riwayat penyimpanan dingin (16 jam di kulkas) masih berada dalam rentang acuan, tanpa keluhan bau, warna, atau tekstur.',
+    timeStorageFactor:
+      'Disimpan di lemari pendingin (≤ 4°C) selama 16 jam (masih di bawah batas acuan 72 jam untuk makanan matang).',
+    sensoryFactor:
+      'Tidak ditemukan perubahan aroma, tekstur berlendir, atau perubahan warna pada pengamatan pengguna.',
+    reasoning:
+      'Kondisi waktu dan suhu penyimpanan mendukung, namun pemeriksaan visual dan indera tidak menggantikan uji laboratorium.',
+    recommendation:
+      'Panaskan kembali secara merata hingga mendidih sebelum disajikan, dan pastikan aromanya tetap normal saat dipanaskan.',
+    wasteGuidance:
+      'Prioritaskan untuk dikonsumsi hari ini agar tidak terbuang. Bila ingin dibagikan ke pihak lain/komunitas, jaga suhu dingin selama perjalanan dan informasikan waktu masak agar penerima dapat memeriksa ulang.',
+  },
+  {
+    id: 'CUPI-DEMO-03',
+    isDemo: true,
+    createdAt: '23 Nov 2026, 20:15',
+    foodName: 'Nasi Kotak Acara Sore',
+    categoryId: 'cooked',
+    categoryLabel: 'Makanan Matang & Lauk Siap Saji',
+    durationHours: '',
+    storageId: 'unknown',
+    storageLabel: 'Tidak Diketahui / Ragu',
+    sensoryFlags: [],
+    sensoryUnknown: true,
+    imagePreview: null,
+    notes: 'Contoh skenario: dibawa pulang dari acara tanpa label jam masak pada kemasan.',
+    status: 'Perlu informasi tambahan',
+    summary:
+      'Informasi belum cukup: waktu masak dan riwayat penyimpanan sebelum makanan diterima belum diketahui.',
+    timeStorageFactor:
+      'Durasi paparan suhu ruang dan kondisi penyimpanan sebelumnya belum dapat dipastikan.',
+    sensoryFactor:
+      'Pengamatan bau dan tekstur belum dikonfirmasi; tampilan fisik yang tampak normal tidak menjamin makanan bebas risiko.',
+    reasoning:
+      'Keamanan pangan bergantung pada kepastian waktu dan suhu. Tanpa kedua data tersebut, kelayakan tidak dapat disimpulkan hanya dari tampilan luar.',
+    recommendation:
+      'Pastikan jam masak kepada penyedia makanan. Apabila makanan diperkirakan sudah berada di suhu ruang lebih dari 4 jam, hindari konsumsi.',
+    wasteGuidance: null,
+  },
+]
 
-  useEffect(() => {
-    const prefersReduced =
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+const DEFAULT_PROFILE = {
+  displayName: 'Pengguna CuPI',
+  contextRole: 'Pencatatan Dapur & Rumah Tangga',
+  contactNote: '',
+  autoSaveHistory: true,
+  strictRoomTempAlert: true,
+  showWasteGuidance: true,
+}
 
-    if (prefersReduced) {
-      setDisplayValue(value)
-      previousValueRef.current = value
-      return
+const STORAGE_KEYS = {
+  HISTORY: 'cupi_history_track_v2',
+  PROFILE: 'cupi_user_profile_v2',
+}
+
+// Mesin Evaluasi Keamanan Pangan CuPI
+// Aturan utama: Waktu & Suhu adalah penentu utama. Visual/indera normal TIDAK BOLEH menaikkan status yang berisiko karena waktu/suhu.
+function evaluateFoodCondition({
+  foodName,
+  categoryId,
+  durationKnown,
+  durationHours,
+  storageId,
+  sensoryFlags,
+  sensoryUnknown,
+  imagePreview,
+  notes,
+  strictRoomTempAlert,
+}) {
+  const category =
+    FOOD_CATEGORIES.find((c) => c.id === categoryId) || FOOD_CATEGORIES[0]
+  const storage =
+    STORAGE_OPTIONS.find((s) => s.id === storageId) || STORAGE_OPTIONS[0]
+
+  const parsedHours = Number(durationHours)
+  const hasValidHours =
+    durationKnown === 'known' &&
+    durationHours !== '' &&
+    !Number.isNaN(parsedHours) &&
+    parsedHours >= 0
+
+  const hasSensoryIssue = Array.isArray(sensoryFlags) && sensoryFlags.length > 0
+
+  // 1. Jika ada temuan indera negatif (bau asam, lendir, jamur, kemasan gembung) -> Risiko terindikasi
+  if (hasSensoryIssue) {
+    const issueLabels = SENSORY_CHECKS.filter((item) =>
+      sensoryFlags.includes(item.id)
+    ).map((item) => item.label.toLowerCase())
+
+    return {
+      status: 'Risiko terindikasi',
+      summary: `Terdeteksi tanda perubahan fisik atau indera pada "${foodName}" (${issueLabels.join(', ')}).`,
+      timeStorageFactor: hasValidHours
+        ? `Tercatat disimpan selama ${parsedHours} jam pada kondisi: ${storage.label}.`
+        : `Tempat penyimpanan: ${storage.label} (durasi jam pasti tidak tercatat).`,
+      sensoryFactor: `Temuan pengamatan pengguna: ${issueLabels.join('; ')}.`,
+      reasoning:
+        'Perubahan bau, tekstur berlendir, bercak jamur, atau wadah yang menggembung menandakan aktivitas pembusukan yang berisiko bagi kesehatan.',
+      recommendation:
+        'Jangan dikonsumsi dan jangan dicicipi. Buang makanan ke wadah tertutup dan jangan disalurkan untuk konsumsi pihak lain.',
+      wasteGuidance: null,
     }
+  }
 
-    const startValue = previousValueRef.current
-    const diff = value - startValue
-    if (diff === 0) return
+  // 2. Jika data waktu atau penyimpanan tidak tersedia -> "Perlu informasi tambahan" atau "Tidak dapat dinilai"
+  if (
+    durationKnown === 'unknown' ||
+    !hasValidHours ||
+    storageId === 'unknown'
+  ) {
+    const isBothUnknown =
+      (durationKnown === 'unknown' || !hasValidHours) && storageId === 'unknown'
 
-    let animationFrameId
-    const startTime = performance.now()
+    return {
+      status: isBothUnknown ? 'Tidak dapat dinilai' : 'Perlu informasi tambahan',
+      summary: isBothUnknown
+        ? `Informasi belum cukup: riwayat waktu dan kondisi penyimpanan "${foodName}" sama-sama tidak diketahui sehingga tidak dapat dinilai.`
+        : `Informasi belum cukup: penilaian "${foodName}" memerlukan kepastian durasi waktu dan kondisi suhu penyimpanan.`,
+      timeStorageFactor:
+        storageId === 'unknown'
+          ? 'Riwayat suhu dan tempat penyimpanan belum diketahui.'
+          : `Tempat penyimpanan tercatat (${storage.label}), namun durasi waktu simpan belum diketahui.`,
+      sensoryFactor: sensoryUnknown
+        ? 'Pengamatan bau, warna, dan tekstur belum dilakukan secara langsung.'
+        : 'Tidak ada tanda kerusakan kasatmata yang dilaporkan, namun foto dan pengamatan indera bukan bukti tunggal bahwa makanan aman.',
+      reasoning:
+        'Bakteri patogen pada pangan dapat berkembang tanpa mengubah warna atau aroma makanan. Tanpa data waktu dan suhu, status keamanan tidak boleh diasumsikan aman.',
+      recommendation:
+        'Lengkapi data waktu masak/simpan dan kondisi suhu. Jika makanan dicurigai telah berada di suhu ruang lebih dari 4 jam tanpa pendinginan, sebaiknya tidak dikonsumsi.',
+      wasteGuidance: null,
+    }
+  }
 
-    const step = (now) => {
-      const elapsed = now - startTime
-      const progress = Math.min(elapsed / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      const current = Math.round(startValue + diff * eased)
-      setDisplayValue(current)
+  // 3. Evaluasi faktor waktu & suhu penyimpanan sebagai penentu utama
+  const warningRoomHours = strictRoomTempAlert
+    ? category.roomLimitHours
+    : category.roomMaxHours
+  const isRoomStorage =
+    storageId === 'room_covered' || storageId === 'room_open'
 
-      if (progress < 1) {
-        animationFrameId = requestAnimationFrame(step)
-      } else {
-        previousValueRef.current = value
+  if (isRoomStorage) {
+    // Melewati batas aman suhu ruang -> Risiko terindikasi (walaupun foto/bau normal)
+    if (
+      parsedHours > category.roomMaxHours ||
+      (storageId === 'room_open' && parsedHours > category.roomLimitHours)
+    ) {
+      return {
+        status: 'Risiko terindikasi',
+        summary: `"${foodName}" telah berada di suhu ruang selama ${parsedHours} jam, melewati batas waktu aman untuk kategori ${category.label.toLowerCase()}.`,
+        timeStorageFactor: `Durasi ${parsedHours} jam pada ${storage.label} melampaui batas acuan keamanan suhu ruang (${category.roomLimitHours}–${category.roomMaxHours} jam).`,
+        sensoryFactor: imagePreview
+          ? 'Foto konteks visual terlampir dan tidak ada keluhan bau/tekstur, namun tampilan normal tidak membatalkan risiko dari riwayat waktu dan suhu.'
+          : 'Tidak ada keluhan bau, warna, atau tekstur, namun hasil indera yang tampak normal tidak dapat menaikkan status yang berisiko karena faktor waktu.',
+        reasoning:
+          'Makanan yang berada terlalu lama di suhu ruang rentan terhadap pertumbuhan mikroorganisme meskipun belum menunjukkan perubahan aroma atau warna.',
+        recommendation:
+          'Disarankan untuk tidak mengonsumsi makanan ini. Ke depannya, simpan makanan matang atau mudah rusak ke dalam kulkas maksimal 2 jam setelah disajikan.',
+        wasteGuidance: null,
       }
     }
 
-    animationFrameId = requestAnimationFrame(step)
-    return () => cancelAnimationFrame(animationFrameId)
-  }, [value, duration])
+    // Mendekati batas waktu suhu ruang -> Perlu perhatian
+    if (parsedHours >= warningRoomHours || sensoryUnknown) {
+      return {
+        status: 'Perlu perhatian',
+        summary: `"${foodName}" telah berada di suhu ruang selama ${parsedHours} jam dan mendekati batas waktu simpan suhu ruang.`,
+        timeStorageFactor: `Tercatat ${parsedHours} jam pada ${storage.label} (ambang kewaspadaan suhu ruang: ${warningRoomHours} jam).`,
+        sensoryFactor: sensoryUnknown
+          ? 'Observasi bau dan tekstur belum dikonfirmasi sepenuhnya oleh pengguna.'
+          : 'Tidak ditemukan perubahan bau, warna, atau tekstur pada pengamatan awal.',
+        reasoning:
+          'Durasi di suhu ruang sudah mendekati batas toleransi sehingga memerlukan tindakan segera sebelum risiko meningkat.',
+        recommendation:
+          'Apabila hendak dikonsumsi sekarang, panaskan kembali hingga panas merata dan periksa aromanya. Jangan dibiarkan lebih lama di suhu ruang dan tidak disarankan untuk didonasikan.',
+        wasteGuidance:
+          'Konsumsi segera setelah dipanaskan merata, atau pindahkan porsi yang belum tersentuh ke lemari pendingin bila durasi suhu ruang belum melewati 2 jam.',
+      }
+    }
+  }
 
-  return <>{displayValue.toLocaleString('id-ID')}</>
+  // Evaluasi penyimpanan dingin (Kulkas)
+  if (storageId === 'fridge' && parsedHours > category.fridgeLimitHours) {
+    return {
+      status: 'Risiko terindikasi',
+      summary: `"${foodName}" telah disimpan di lemari pendingin selama ${parsedHours} jam, melewati acuan waktu simpan dingin (${category.fridgeLimitHours} jam).`,
+      timeStorageFactor: `Durasi penyimpanan kulkas ${parsedHours} jam melebihi batas acuan ${category.fridgeLimitHours} jam untuk kategori ${category.label}.`,
+      sensoryFactor:
+        'Meskipun tampilan dan bau tampak normal, penyimpanan dingin yang melampaui batas waktu tetap berisiko.',
+      reasoning:
+        'Pendinginan di kulkas hanya memperlambat pertumbuhan mikroba, bukan menghentikannya tanpa batas waktu.',
+      recommendation:
+        'Sebaiknya tidak dikonsumsi. Gunakan label tanggal simpan pada wadah makanan di kulkas untuk mencegah penyimpanan berlebih.',
+      wasteGuidance: null,
+    }
+  }
+
+  // 4. Waktu & suhu sesuai, tetapi observasi indera belum dilakukan
+  if (sensoryUnknown) {
+    return {
+      status: 'Perlu informasi tambahan',
+      summary: `Informasi belum cukup: riwayat waktu (${parsedHours} jam) dan suhu (${storage.label}) masih sesuai acuan, namun pengamatan bau dan tekstur belum dikonfirmasi.`,
+      timeStorageFactor: `Disimpan pada ${storage.label} selama ${parsedHours} jam (dalam rentang acuan kategori ${category.label}).`,
+      sensoryFactor:
+        'Pengguna menandai belum memeriksa bau, warna, dan tekstur makanan secara langsung.',
+      reasoning:
+        'Penilaian kondisi makanan memerlukan gabungan riwayat waktu/suhu yang baik dan konfirmasi bahwa tidak ada tanda pembusukan fisik.',
+      recommendation:
+        'Periksa aroma, tekstur permukaan, dan kondisi bagian dalam makanan sebelum memutuskan untuk memanaskan atau mengonsumsinya.',
+      wasteGuidance: null,
+    }
+  }
+
+  // 5. Waktu, suhu, dan observasi indera semuanya dalam batas wajar -> Status: "Perlu perhatian"
+  // (Tidak pernah menggunakan klaim absolut "100% Aman")
+  return {
+    status: 'Perlu perhatian',
+    summary: `Riwayat waktu (${parsedHours} jam) pada ${storage.label.toLowerCase()} masih berada dalam batas acuan untuk "${foodName}", tanpa indikasi perubahan bau, warna, atau tekstur.`,
+    timeStorageFactor: `Tercatat ${parsedHours} jam pada ${storage.label} (acuan kategori: ${
+      isRoomStorage
+        ? `maks. ${category.roomLimitHours}–${category.roomMaxHours} jam suhu ruang`
+        : `maks. ${category.fridgeLimitHours} jam suhu kulkas`
+    }).`,
+    sensoryFactor: imagePreview
+      ? 'Foto konteks visual disertakan dan pengguna mengonfirmasi tidak ada perubahan bau, tekstur lendir, atau warna tidak wajar.'
+      : 'Pengguna mengonfirmasi tidak ada perubahan bau, tekstur lendir, atau warna tidak wajar.',
+    reasoning:
+      'Riwayat penyimpanan dan pengamatan indera mendukung, namun pemeriksaan mandiri tidak dapat mendeteksi mikroorganisme tak kasatmata sehingga penanganan higienis tetap diperlukan.',
+    recommendation:
+      'Gunakan peralatan makan bersih. Untuk makanan matang atau makanan dari kulkas, panaskan kembali hingga panas merata sebelum dikonsumsi dan periksa aromanya.',
+    wasteGuidance:
+      notes && notes.trim().length > 0
+        ? `Catatan ("${notes.trim()}") telah dicatat. Untuk mengurangi food waste secara bertanggung jawab, habiskan sesuai porsi. Jika ingin disalurkan ke penerima atau food bank, pastikan suhu penyimpanan tetap terjaga dan ingatkan penerima untuk tetap melakukan pemeriksaan kelayakan sendiri.`
+        : 'Untuk mengurangi food waste secara bertanggung jawab, prioritaskan konsumsi tepat waktu atau beri label jam simpan. Bila ingin dibagikan, pastikan rantai suhu terjaga dan penerima/food bank tetap melakukan pemeriksaan mandiri sebelum konsumsi.',
+  }
 }
 
 function App() {
-  const [activePage, setActivePage] = useState('Beranda')
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const [isClosing, setIsClosing] = useState(false)
-  const [isThemeWashing, setIsThemeWashing] = useState(false)
-
-  // State operasional simulasi untuk Dashboard Siklus Residu
-  const [residueLogs, setResidueLogs] = useState(INITIAL_RESIDUE_LOGS)
-  const [periodFilter, setPeriodFilter] = useState('SEMUA')
-  const [stageFilter, setStageFilter] = useState('SEMUA')
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [newSource, setNewSource] = useState('')
-  const [newCategory, setNewCategory] = useState('Organik Basah')
-  const [newVolume, setNewVolume] = useState('')
-  const [newStage, setNewStage] = useState('Residu Masuk')
-  const [formNotice, setFormNotice] = useState('')
-
-  const drawerTimerRef = useRef(null)
-  const themeWashTimerRef = useRef(null)
-  const noticeTimerRef = useRef(null)
-
+  const [activeNav, setActiveNav] = useState('CuPI')
   const { colorMode, toggleColorMode } = useColorMode()
 
-  // Pembersihan timer saat komponen unmount
+  // State History Track
+  const [historyList, setHistoryList] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.HISTORY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed)) return parsed
+      }
+    } catch {
+      // Fallback ke data demo
+    }
+    return INITIAL_HISTORY_DEMO
+  })
+
+  // State Profile
+  const [profile, setProfile] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.PROFILE)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed && typeof parsed === 'object') {
+          return { ...DEFAULT_PROFILE, ...parsed }
+        }
+      }
+    } catch {
+      // Fallback ke default profile
+    }
+    return DEFAULT_PROFILE
+  })
+
+  // State Form Pemeriksaan Makanan
+  const [foodName, setFoodName] = useState('')
+  const [categoryId, setCategoryId] = useState('cooked')
+  const [durationKnown, setDurationKnown] = useState('known')
+  const [durationHours, setDurationHours] = useState('')
+  const [storageId, setStorageId] = useState('fridge')
+  const [sensoryFlags, setSensoryFlags] = useState([])
+  const [sensoryUnknown, setSensoryUnknown] = useState(false)
+  const [notes, setNotes] = useState('')
+  const [imagePreview, setImagePreview] = useState(null)
+  const [imageFileName, setImageFileName] = useState('')
+  const [uploadError, setUploadError] = useState('')
+  const [isDraggingFile, setIsDraggingFile] = useState(false)
+
+  // State Proses & Hasil
+  const [formErrors, setFormErrors] = useState({})
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [assessmentResult, setAssessmentResult] = useState(null)
+  const [isResultSaved, setIsResultSaved] = useState(false)
+
+  // State History Track Filter & Detail
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('Semua')
+  const [expandedHistoryId, setExpandedHistoryId] = useState('CUPI-DEMO-01')
+
+  // State Profile Edit
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
+  const [profileDraft, setProfileDraft] = useState(profile)
+  const [profileFeedback, setProfileFeedback] = useState('')
+  const [confirmClearHistory, setConfirmClearHistory] = useState(false)
+
+  const analyzeTimerRef = useRef(null)
+  const feedbackTimerRef = useRef(null)
+  const fileInputRef = useRef(null)
+  const resultSectionRef = useRef(null)
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(historyList))
+    } catch {
+      // Abaikan error kuota localStorage
+    }
+  }, [historyList])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile))
+    } catch {
+      // Abaikan error localStorage
+    }
+  }, [profile])
+
   useEffect(() => {
     return () => {
-      if (drawerTimerRef.current) clearTimeout(drawerTimerRef.current)
-      if (themeWashTimerRef.current) clearTimeout(themeWashTimerRef.current)
-      if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current)
+      if (analyzeTimerRef.current) clearTimeout(analyzeTimerRef.current)
+      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current)
     }
   }, [])
 
-  // Sistem Palet Fresh Botanical (Light) & Deep Forest Green (Dark)
-  const bgMain = useColorModeValue('#E2EFDF', '#101D15')
-  const surfaceBg = useColorModeValue('#EAF4E7', '#17281D')
-  const surfaceSecondary = useColorModeValue('#D1E5CD', '#243B2A')
-  const cardMainBg = useColorModeValue('#D8EAD4', '#1D3324')
-  const borderSubtle = useColorModeValue('#B5D0B2', '#36533C')
-  const borderStrong = useColorModeValue('#8EB68A', '#4A7253')
-  const textMain = useColorModeValue('#193B28', '#EAF3E7')
-  const textMuted = useColorModeValue('#4E6D54', '#A9BDA8')
-  const pillActiveBg = useColorModeValue('#C5DFC1', '#2B4931')
-  const highlightSoft = useColorModeValue('#A9CFA3', '#34583B')
-  const btnBg = useColorModeValue('#397A46', '#91C887')
-  const btnColor = useColorModeValue('#F4FAF2', '#101D15')
-  const btnHoverBg = useColorModeValue('#2E663A', '#A3D49A')
-  const iconBoxBg = useColorModeValue('#D1E5CD', '#243B2A')
-  const accentColor = useColorModeValue('#397A46', '#91C887')
-  const inputBg = useColorModeValue('#F1F8EF', '#132218')
+  // Design Tokens CuPI (Fresh Botanical Green + Warm Food Neutrals)
+  const bgMain = useColorModeValue('#E8F1E5', '#0E1A13')
+  const surfaceSage = useColorModeValue('#F0F5ED', '#15251B')
+  const surfaceCream = useColorModeValue('#F6F4E9', '#1A2D21')
+  const surfaceInteractive = useColorModeValue('#DCE9D7', '#213829')
+  const primaryGreen = useColorModeValue('#285B3D', '#78A96B')
+  const primaryBtnBg = useColorModeValue('#285B3D', '#78A96B')
+  const primaryBtnText = useColorModeValue('#F6F4E9', '#0E1A13')
+  const primaryBtnHover = useColorModeValue('#1F4930', '#8AB97D')
+  const freshGreen = useColorModeValue('#78A96B', '#5E8E53')
+  const textMain = useColorModeValue('#203329', '#EEF3EC')
+  const textMuted = useColorModeValue('#65766A', '#9BB0A1')
+  const borderSubtle = useColorModeValue('#C5D7C0', '#273F30')
+  const borderStrong = useColorModeValue('#97B891', '#3B5E47')
+  const inputBg = useColorModeValue('#FAFBF8', '#101E15')
+
+  // Warna Status
+  const amberStatus = useColorModeValue('#D99A38', '#E5AC4C')
+  const amberBg = useColorModeValue('#F7EEDB', '#322614')
+  const amberText = useColorModeValue('#6B460B', '#F6D594')
+
+  const redStatus = useColorModeValue('#B9574F', '#DF7870')
+  const redBg = useColorModeValue('#F6E5E3', '#351A19')
+  const redText = useColorModeValue('#70231D', '#F6B6B1')
+
+  const infoStatus = useColorModeValue('#4A6B54', '#88AE93')
+  const infoBg = useColorModeValue('#E2ECE3', '#1E3326')
+  const infoText = useColorModeValue('#1F3828', '#D4E6DA')
 
   const elevatedShadow = useColorModeValue(
-    '0 8px 24px rgba(25, 59, 40, 0.08), 0 2px 6px rgba(25, 59, 40, 0.04)',
-    '0 12px 28px rgba(5, 11, 8, 0.65), 0 2px 8px rgba(5, 11, 8, 0.45)'
+    '0 8px 24px rgba(32, 51, 41, 0.06), 0 1px 3px rgba(32, 51, 41, 0.04)',
+    '0 12px 28px rgba(3, 8, 5, 0.6), 0 2px 6px rgba(3, 8, 5, 0.4)'
   )
 
-  const openMenu = () => {
-    if (drawerTimerRef.current) clearTimeout(drawerTimerRef.current)
-    setIsClosing(false)
-    setIsDrawerOpen(true)
-  }
-
-  const closeMenu = () => {
-    if (drawerTimerRef.current) clearTimeout(drawerTimerRef.current)
-    setIsClosing(true)
-    drawerTimerRef.current = setTimeout(() => {
-      setIsDrawerOpen(false)
-      setIsClosing(false)
-    }, 220)
-  }
-
-  const toggleMenu = () => {
-    if (isDrawerOpen) {
-      closeMenu()
-    } else {
-      openMenu()
-    }
-  }
-
-  const handleSelectDestination = (pageId) => {
-    setActivePage(pageId)
-    if (isDrawerOpen) {
-      closeMenu()
-    }
-  }
-
-  const handleThemeSwitch = () => {
-    if (themeWashTimerRef.current) clearTimeout(themeWashTimerRef.current)
-    setIsThemeWashing(true)
-    toggleColorMode()
-    themeWashTimerRef.current = setTimeout(() => {
-      setIsThemeWashing(false)
-    }, 520)
-  }
-
-  // Kalkulasi metrik Dashboard Siklus Residu berdasarkan filter periode
-  const filteredByPeriod = useMemo(() => {
-    if (periodFilter === '7H') {
-      return residueLogs.filter((item) => item.period === '7H')
-    }
-    return residueLogs
-  }, [residueLogs, periodFilter])
-
-  const filteredActivities = useMemo(() => {
-    if (stageFilter === 'SEMUA') return filteredByPeriod
-    return filteredByPeriod.filter((item) => item.stage === stageFilter)
-  }, [filteredByPeriod, stageFilter])
-
-  const kpiMetrics = useMemo(() => {
-    let totalMasuk = 0
-    let sedangDiproses = 0
-    let dimanfaatkan = 0
-    let residuAkhir = 0
-
-    filteredByPeriod.forEach((item) => {
-      totalMasuk += item.volume
-      if (
-        item.stage === 'Residu Masuk' ||
-        item.stage === 'Pengumpulan' ||
-        item.stage === 'Pemilahan'
-      ) {
-        sedangDiproses += item.volume
-      } else if (item.stage === 'Pengolahan') {
-        dimanfaatkan += item.volume
-      } else if (item.stage === 'Residu Akhir') {
-        residuAkhir += item.volume
+  const getStatusTokens = (status) => {
+    if (status === 'Risiko terindikasi') {
+      return {
+        accent: redStatus,
+        bg: redBg,
+        text: redText,
       }
-    })
-
+    }
+    if (status === 'Perlu perhatian') {
+      return {
+        accent: amberStatus,
+        bg: amberBg,
+        text: amberText,
+      }
+    }
     return {
-      totalMasuk,
-      sedangDiproses,
-      dimanfaatkan,
-      residuAkhir,
+      accent: infoStatus,
+      bg: infoBg,
+      text: infoText,
     }
-  }, [filteredByPeriod])
+  }
 
-  // Tahapan perjalanan Siklus Residu (5 Tahap)
-  const lifecycleStages = useMemo(() => {
-    const stageCounts = {
-      'Residu Masuk': { volume: 0, count: 0 },
-      Pengumpulan: { volume: 0, count: 0 },
-      Pemilahan: { volume: 0, count: 0 },
-      Pengolahan: { volume: 0, count: 0 },
-      'Residu Akhir': { volume: 0, count: 0 },
-    }
+  // Handler Unggah Foto Makanan
+  const handleFileProcess = (file) => {
+    setUploadError('')
+    if (!file) return
 
-    filteredByPeriod.forEach((item) => {
-      if (stageCounts[item.stage]) {
-        stageCounts[item.stage].volume += item.volume
-        stageCounts[item.stage].count += 1
-      }
-    })
-
-    const total = Math.max(kpiMetrics.totalMasuk, 1)
-
-    return [
-      {
-        id: 'Residu Masuk',
-        step: '01',
-        title: 'Residu Masuk',
-        desc: 'Pencatatan sumber & penerimaan awal',
-        volume: stageCounts['Residu Masuk'].volume,
-        count: stageCounts['Residu Masuk'].count,
-        ratio: Math.round((stageCounts['Residu Masuk'].volume / total) * 100),
-      },
-      {
-        id: 'Pengumpulan',
-        step: '02',
-        title: 'Pengumpulan',
-        desc: 'Agregasi kolektif dari titik sumber',
-        volume: stageCounts['Pengumpulan'].volume,
-        count: stageCounts['Pengumpulan'].count,
-        ratio: Math.round((stageCounts['Pengumpulan'].volume / total) * 100),
-      },
-      {
-        id: 'Pemilahan',
-        step: '03',
-        title: 'Pemilahan',
-        desc: 'Pemisahan menurut karakteristik bahan',
-        volume: stageCounts['Pemilahan'].volume,
-        count: stageCounts['Pemilahan'].count,
-        ratio: Math.round((stageCounts['Pemilahan'].volume / total) * 100),
-      },
-      {
-        id: 'Pengolahan',
-        step: '04',
-        title: 'Pengolahan & Pemanfaatan',
-        desc: 'Penyaluran untuk diproses kembali',
-        volume: stageCounts['Pengolahan'].volume,
-        count: stageCounts['Pengolahan'].count,
-        ratio: Math.round((stageCounts['Pengolahan'].volume / total) * 100),
-      },
-      {
-        id: 'Residu Akhir',
-        step: '05',
-        title: 'Residu Akhir',
-        desc: 'Sisa akhir yang memerlukan penanganan',
-        volume: stageCounts['Residu Akhir'].volume,
-        count: stageCounts['Residu Akhir'].count,
-        ratio: Math.round((stageCounts['Residu Akhir'].volume / total) * 100),
-      },
-    ]
-  }, [filteredByPeriod, kpiMetrics.totalMasuk])
-
-  // Komposisi berdasarkan kategori
-  const categoryBreakdown = useMemo(() => {
-    const groups = {}
-    filteredByPeriod.forEach((item) => {
-      groups[item.category] = (groups[item.category] || 0) + item.volume
-    })
-    const total = Math.max(kpiMetrics.totalMasuk, 1)
-    return Object.entries(groups).map(([name, volume]) => ({
-      name,
-      volume,
-      percentage: Math.round((volume / total) * 100),
-    }))
-  }, [filteredByPeriod, kpiMetrics.totalMasuk])
-
-  const handleAddSimulatedRecord = (e) => {
-    e.preventDefault()
-    const cleanSource = newSource.trim()
-    const parsedVolume = Number(newVolume)
-
-    if (!cleanSource || !parsedVolume || parsedVolume <= 0) {
-      setFormNotice('Mohon isi nama sumber dan volume residu yang valid (> 0 kg).')
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      setUploadError('Format file belum didukung. Gunakan gambar JPG, PNG, atau WEBP.')
       return
     }
 
-    const newEntry = {
-      id: `SR-${100 + residueLogs.length + 1}`,
-      date: 'Baru saja (Simulasi Lokal)',
-      source: cleanSource,
-      category: newCategory,
-      volume: parsedVolume,
-      unit: 'kg',
-      stage: newStage,
-      period: '7H',
+    if (file.size > 4 * 1024 * 1024) {
+      setUploadError('Ukuran file melebihi 4 MB. Pilih foto dengan ukuran lebih kecil.')
+      return
     }
 
-    setResidueLogs((prev) => [newEntry, ...prev])
-    setNewSource('')
-    setNewVolume('')
-    setIsFormOpen(false)
-    setFormNotice(`Catatan ${newEntry.id} (${cleanSource} - ${parsedVolume} kg) ditambahkan ke simulasi lokal.`)
-
-    if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current)
-    noticeTimerRef.current = setTimeout(() => {
-      setFormNotice('')
-    }, 4500)
+    const reader = new FileReader()
+    reader.onload = () => {
+      setImagePreview(reader.result)
+      setImageFileName(file.name)
+    }
+    reader.onerror = () => {
+      setUploadError('Gagal memuat foto. Silakan pilih file gambar lain.')
+    }
+    reader.readAsDataURL(file)
   }
+
+  const handleFileInputChange = (e) => {
+    const file = e.target.files && e.target.files[0]
+    if (file) handleFileProcess(file)
+  }
+
+  const handleRemoveImage = () => {
+    setImagePreview(null)
+    setImageFileName('')
+    setUploadError('')
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handleToggleSensoryFlag = (flagId) => {
+    setSensoryUnknown(false)
+    setSensoryFlags((prev) =>
+      prev.includes(flagId)
+        ? prev.filter((item) => item !== flagId)
+        : [...prev, flagId]
+    )
+  }
+
+  const handleToggleSensoryUnknown = () => {
+    setSensoryUnknown((prev) => {
+      const next = !prev
+      if (next) setSensoryFlags([])
+      return next
+    })
+  }
+
+  const handleRunAssessment = (e) => {
+    e.preventDefault()
+    const errors = {}
+
+    if (!foodName.trim()) {
+      errors.foodName = 'Nama atau jenis makanan wajib diisi terlebih dahulu.'
+    }
+
+    if (durationKnown === 'known') {
+      if (durationHours === '' || Number.isNaN(Number(durationHours))) {
+        errors.durationHours =
+          'Isi perkiraan durasi simpan (jam), atau pilih "Tidak diketahui / ragu".'
+      } else if (Number(durationHours) < 0 || Number(durationHours) > 720) {
+        errors.durationHours = 'Masukkan angka durasi yang wajar (0–720 jam).'
+      }
+    }
+
+    setFormErrors(errors)
+    if (Object.keys(errors).length > 0) return
+
+    setIsAnalyzing(true)
+    setIsResultSaved(false)
+
+    if (analyzeTimerRef.current) clearTimeout(analyzeTimerRef.current)
+    analyzeTimerRef.current = setTimeout(() => {
+      const cleanName = foodName.trim()
+      const categoryObj =
+        FOOD_CATEGORIES.find((c) => c.id === categoryId) || FOOD_CATEGORIES[0]
+      const storageObj =
+        STORAGE_OPTIONS.find((s) => s.id === storageId) || STORAGE_OPTIONS[0]
+
+      const evaluated = evaluateFoodCondition({
+        foodName: cleanName,
+        categoryId,
+        durationKnown,
+        durationHours,
+        storageId,
+        sensoryFlags,
+        sensoryUnknown,
+        imagePreview,
+        notes,
+        strictRoomTempAlert: profile.strictRoomTempAlert,
+      })
+
+      const now = new Date()
+      const formattedDate = now.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })
+      const formattedTime = now.toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+
+      const newRecord = {
+        id: `CUPI-${Math.floor(1000 + Math.random() * 9000)}`,
+        isDemo: false,
+        createdAt: `${formattedDate}, ${formattedTime}`,
+        foodName: cleanName,
+        categoryId,
+        categoryLabel: categoryObj.label,
+        durationHours: durationKnown === 'known' ? String(durationHours) : '',
+        storageId,
+        storageLabel: storageObj.label,
+        sensoryFlags: [...sensoryFlags],
+        sensoryUnknown,
+        imagePreview,
+        notes: notes.trim(),
+        ...evaluated,
+      }
+
+      setAssessmentResult(newRecord)
+      setIsAnalyzing(false)
+
+      if (profile.autoSaveHistory) {
+        setHistoryList((prev) => [newRecord, ...prev])
+        setExpandedHistoryId(newRecord.id)
+        setIsResultSaved(true)
+      }
+
+      setTimeout(() => {
+        if (resultSectionRef.current) {
+          resultSectionRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+        }
+      }, 80)
+    }, 420)
+  }
+
+  const handleSaveToHistoryManual = () => {
+    if (!assessmentResult || isResultSaved) return
+    setHistoryList((prev) => [assessmentResult, ...prev])
+    setExpandedHistoryId(assessmentResult.id)
+    setIsResultSaved(true)
+  }
+
+  const handleResetForm = () => {
+    setFoodName('')
+    setCategoryId('cooked')
+    setDurationKnown('known')
+    setDurationHours('')
+    setStorageId('fridge')
+    setSensoryFlags([])
+    setSensoryUnknown(false)
+    setNotes('')
+    handleRemoveImage()
+    setFormErrors({})
+    setAssessmentResult(null)
+    setIsResultSaved(false)
+  }
+
+  const handleFillSampleInput = (sampleType) => {
+    setFormErrors({})
+    setAssessmentResult(null)
+    setIsResultSaved(false)
+
+    if (sampleType === 'room_risk') {
+      setFoodName('Opor Ayam Santan')
+      setCategoryId('dairy_chilled')
+      setDurationKnown('known')
+      setDurationHours('5.5')
+      setStorageId('room_open')
+      setSensoryFlags([])
+      setSensoryUnknown(false)
+      setNotes('Contoh uji: dibiarkan di suhu ruang sejak siang, tampilan masih terlihat biasa.')
+    } else {
+      setFoodName('Capcay Sayur Ayam')
+      setCategoryId('cooked')
+      setDurationKnown('known')
+      setDurationHours('14')
+      setStorageId('fridge')
+      setSensoryFlags([])
+      setSensoryUnknown(false)
+      setNotes('Contoh uji: disimpan tertutup di lemari pendingin.')
+    }
+  }
+
+  const filteredHistory = useMemo(() => {
+    return historyList.filter((item) => {
+      const matchQuery =
+        !searchQuery.trim() ||
+        item.foodName.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+        (item.categoryLabel &&
+          item.categoryLabel.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+
+      const matchStatus =
+        statusFilter === 'Semua' || item.status === statusFilter
+
+      return matchQuery && matchStatus
+    })
+  }, [historyList, searchQuery, statusFilter])
+
+  const handleDeleteHistoryItem = (id) => {
+    setHistoryList((prev) => prev.filter((item) => item.id !== id))
+    if (expandedHistoryId === id) {
+      setExpandedHistoryId(null)
+    }
+  }
+
+  const handleSaveProfile = (e) => {
+    e.preventDefault()
+    const cleanName = profileDraft.displayName.trim() || 'Pengguna CuPI'
+    const updated = {
+      ...profileDraft,
+      displayName: cleanName,
+    }
+    setProfile(updated)
+    setProfileDraft(updated)
+    setIsEditingProfile(false)
+    setProfileFeedback('Perubahan profil lokal berhasil disimpan.')
+
+    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current)
+    feedbackTimerRef.current = setTimeout(() => {
+      setProfileFeedback('')
+    }, 3200)
+  }
+
+  const handlePreferenceToggle = (key) => {
+    setProfile((prev) => {
+      const updated = { ...prev, [key]: !prev[key] }
+      setProfileDraft(updated)
+      return updated
+    })
+  }
+
+  const userInitials = useMemo(() => {
+    const parts = (profile.displayName || 'CuPI').trim().split(/\s+/)
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  }, [profile.displayName])
 
   return (
     <Flex
       direction="column"
       minH="100vh"
       w="100%"
-      pos="relative"
-      overflowX="hidden"
       bg={bgMain}
       color={textMain}
       fontFamily="'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
-      className="botanical-app-shell"
+      className="cupi-root-transition"
     >
       <style>{`
-        .botanical-app-shell,
-        .botanical-app-shell nav,
-        .botanical-app-shell footer,
-        .botanical-app-shell button,
-        .botanical-app-shell input,
-        .botanical-app-shell select,
-        .botanical-app-shell [data-theme-transition="true"] {
+        .cupi-root-transition,
+        .cupi-root-transition nav,
+        .cupi-root-transition footer,
+        .cupi-root-transition button,
+        .cupi-root-transition input,
+        .cupi-root-transition select,
+        .cupi-root-transition textarea,
+        .cupi-root-transition [data-cupi-el="true"] {
           transition:
-            background-color 0.48s cubic-bezier(0.22, 1, 0.36, 1),
-            border-color 0.48s cubic-bezier(0.22, 1, 0.36, 1),
-            color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-            box-shadow 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+            background-color 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+            border-color 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+            color 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 0.34s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         @keyframes dropUnblur {
           from {
             opacity: 0;
-            transform: translateY(-14px) scale(0.97);
+            transform: translateY(-14px) scale(0.98);
           }
           to {
             opacity: 1;
@@ -495,7 +833,7 @@ function App() {
         @keyframes iconSwitch {
           from {
             opacity: 0;
-            transform: rotate(-75deg) scale(0.55);
+            transform: rotate(-70deg) scale(0.55);
           }
           to {
             opacity: 1;
@@ -503,53 +841,10 @@ function App() {
           }
         }
 
-        @keyframes menuPopIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px) scale(0.96);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
-        @keyframes menuPopOut {
-          from {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-          to {
-            opacity: 0;
-            transform: translateY(-8px) scale(0.96);
-          }
-        }
-
-        @keyframes itemSlideIn {
-          from {
-            opacity: 0;
-            transform: translateX(-8px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes backdropFadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        @keyframes backdropFadeOut {
-          from { opacity: 1; }
-          to { opacity: 0; }
-        }
-
         @keyframes pageFadeUp {
           from {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(8px);
           }
           to {
             opacity: 1;
@@ -557,23 +852,14 @@ function App() {
           }
         }
 
-        @keyframes barGrowUp {
-          from {
-            transform: scaleY(0.15);
+        @keyframes loadingDotPulse {
+          0%, 100% {
+            opacity: 0.95;
+            transform: scale(1);
+          }
+          50% {
             opacity: 0.4;
-          }
-          to {
-            transform: scaleY(1);
-            opacity: 1;
-          }
-        }
-
-        @keyframes progressFillHorizontal {
-          from {
-            transform: scaleX(0);
-          }
-          to {
-            transform: scaleX(1);
+            transform: scale(1.25);
           }
         }
 
@@ -588,282 +874,103 @@ function App() {
         }
       `}</style>
 
-      {/* Lapisan Atmosfer Lembut Saat Pergantian Mode Terang/Gelap */}
+      {/* ================================================================== */}
+      {/* NAVBAR KAPSUL TENGAH — MEMPERTAHANKAN DNA VISUAL ASLI              */}
+      {/* HANYA BERISI TEPAT 3 MENU: CuPI | History Track | Profile          */}
+      {/* ================================================================== */}
       <Box
-        pos="fixed"
-        inset={0}
-        pointerEvents="none"
-        zIndex={0}
-        opacity={isThemeWashing ? 1 : 0.35}
-        bgGradient={
-          colorMode === 'light'
-            ? 'radial(circle at 50% 0%, rgba(110, 175, 118, 0.28), transparent 70%)'
-            : 'radial(circle at 50% 0%, rgba(72, 130, 86, 0.25), transparent 70%)'
-        }
-        transition="opacity 0.5s ease"
-      />
-
-      {/* Tombol Navigasi Cepat di Pojok Kiri Atas */}
-      <Box
-        as="button"
-        type="button"
-        onClick={toggleMenu}
-        aria-label={isDrawerOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
-        aria-expanded={isDrawerOpen}
-        pos="fixed"
-        top={4}
-        left={{ base: 4, md: 6 }}
-        zIndex={120}
-        w="52px"
-        h="52px"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        bg={surfaceBg}
-        color={textMain}
-        borderRadius="xl"
-        border="1px solid"
-        borderColor={isDrawerOpen ? accentColor : borderSubtle}
-        boxShadow={elevatedShadow}
-        cursor="pointer"
-        userSelect="none"
-        animation="dropUnblur 0.55s cubic-bezier(0.22, 1, 0.36, 1) both"
-        _hover={{
-          bg: pillActiveBg,
-          borderColor: borderStrong,
-          transform: 'translateY(-1px)',
-        }}
-        _active={{ transform: 'scale(0.93)' }}
-        _focusVisible={{
-          outline: '2px solid',
-          outlineColor: accentColor,
-          outlineOffset: '2px',
-        }}
-      >
-        <Box
-          as="span"
-          key={isDrawerOpen ? 'close' : 'open'}
-          display="inline-flex"
-          alignItems="center"
-          justifyContent="center"
-          animation="iconSwitch 0.3s cubic-bezier(0.22, 1, 0.36, 1) both"
-        >
-          {isDrawerOpen ? (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="4" y1="7" x2="20" y2="7" />
-              <line x1="4" y1="12" x2="15" y2="12" />
-              <line x1="4" y1="17" x2="18" y2="17" />
-            </svg>
-          )}
-        </Box>
-      </Box>
-
-      {/* Backdrop & Panel Navigasi Melayang */}
-      {isDrawerOpen && (
-        <>
-          <Box
-            pos="fixed"
-            inset={0}
-            zIndex={105}
-            bg="blackAlpha.400"
-            backdropFilter="blur(2px)"
-            onClick={closeMenu}
-            animation={`${isClosing ? 'backdropFadeOut' : 'backdropFadeIn'} 0.22s ease forwards`}
-          />
-
-          <Box
-            data-theme-transition="true"
-            pos="fixed"
-            top="78px"
-            left={{ base: 4, md: 6 }}
-            zIndex={115}
-            w={{ base: 'calc(100vw - 32px)', sm: '316px' }}
-            p={3}
-            bg={surfaceBg}
-            borderRadius="xl"
-            border="1px solid"
-            borderColor={borderSubtle}
-            boxShadow={elevatedShadow}
-            transformOrigin="top left"
-            animation={`${
-              isClosing
-                ? 'menuPopOut 0.22s cubic-bezier(0.4, 0, 1, 1) forwards'
-                : 'menuPopIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both'
-            }`}
-          >
-            <Flex align="center" justify="space-between" px={3} pt={1} pb={2}>
-              <Text
-                fontSize="11px"
-                fontWeight="bold"
-                letterSpacing="0.08em"
-                textTransform="uppercase"
-                color={textMuted}
-              >
-                Navigasi Halaman
-              </Text>
-              <Box w="6px" h="6px" borderRadius="full" bg={accentColor} />
-            </Flex>
-
-            <VStack spacing={1} align="stretch">
-              {NAV_DESTINATIONS.map((dest, idx) => {
-                const isSelected = activePage === dest.id
-                return (
-                  <Flex
-                    as="button"
-                    type="button"
-                    key={dest.id}
-                    onClick={() => handleSelectDestination(dest.id)}
-                    align="center"
-                    justify="space-between"
-                    w="100%"
-                    textAlign="left"
-                    p={2.5}
-                    borderRadius="lg"
-                    bg={isSelected ? pillActiveBg : 'transparent'}
-                    border="1px solid"
-                    borderColor={isSelected ? borderStrong : 'transparent'}
-                    cursor="pointer"
-                    userSelect="none"
-                    animation={`itemSlideIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) ${0.035 * (idx + 1)}s both`}
-                    _hover={{ bg: pillActiveBg, transform: 'translateX(2px)' }}
-                    _active={{ transform: 'scale(0.98)' }}
-                    _focusVisible={{
-                      outline: '2px solid',
-                      outlineColor: accentColor,
-                      outlineOffset: '-2px',
-                    }}
-                  >
-                    <HStack spacing={3}>
-                      <Flex
-                        data-theme-transition="true"
-                        w="36px"
-                        h="36px"
-                        flexShrink={0}
-                        align="center"
-                        justify="center"
-                        borderRadius="md"
-                        bg={isSelected ? btnBg : iconBoxBg}
-                        color={isSelected ? btnColor : textMain}
-                      >
-                        {dest.icon}
-                      </Flex>
-                      <Box>
-                        <Text
-                          fontFamily="'Figtree', sans-serif"
-                          fontSize="sm"
-                          fontWeight="bold"
-                          color={textMain}
-                          lineHeight="short"
-                        >
-                          {dest.label}
-                        </Text>
-                        <Text fontSize="xs" color={textMuted} lineHeight="short" mt={0.5}>
-                          {dest.desc}
-                        </Text>
-                      </Box>
-                    </HStack>
-
-                    {isSelected && (
-                      <Box w="7px" h="7px" borderRadius="full" bg={accentColor} mr={1} />
-                    )}
-                  </Flex>
-                )
-              })}
-            </VStack>
-          </Box>
-        </>
-      )}
-
-      {/* Navbar Kapsul Tengah */}
-      <Box
-        as="nav"
+        as="header"
         pos="fixed"
         top={0}
         left={0}
         w="100%"
         zIndex={100}
-        pt={4}
-        pr={4}
-        pl={{ base: '76px', lg: 4 }}
+        pt={{ base: 3, sm: 4 }}
+        px={{ base: 3, sm: 5 }}
         pointerEvents="none"
       >
         <Flex
-          data-theme-transition="true"
-          maxW="700px"
-          h="52px"
+          as="nav"
+          aria-label="Navigasi Utama CuPI"
+          data-cupi-el="true"
+          maxW="720px"
+          minH="54px"
           mx="auto"
-          px={{ base: 4, sm: 5 }}
+          px={{ base: 3.5, sm: 5 }}
+          py={{ base: 1.5, sm: 0 }}
           align="center"
           justify="space-between"
-          bg={surfaceBg}
+          gap={2}
+          bg={surfaceSage}
           borderRadius="full"
           border="1px solid"
           borderColor={borderSubtle}
           boxShadow={elevatedShadow}
           pointerEvents="auto"
-          animation="dropUnblur 0.55s cubic-bezier(0.22, 1, 0.36, 1) both"
+          animation="dropUnblur 0.55s cubic-bezier(0.16, 1, 0.3, 1) both"
         >
+          {/* Wordmark CuPI */}
           <HStack
             as="button"
             type="button"
             spacing={2}
-            onClick={() => handleSelectDestination('Beranda')}
+            onClick={() => setActiveNav('CuPI')}
             pl={1}
             cursor="pointer"
-            animation="contentReveal 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both"
+            userSelect="none"
+            animation="contentReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both"
             _focusVisible={{
               outline: '2px solid',
-              outlineColor: accentColor,
-              outlineOffset: '4px',
-              borderRadius: 'sm',
+              outlineColor: primaryGreen,
+              outlineOffset: '3px',
+              borderRadius: 'full',
             }}
           >
-            <Box w="8px" h="8px" borderRadius="full" bg={accentColor} />
+            <Box w="8px" h="8px" borderRadius="full" bg={primaryGreen} />
             <Text
               fontFamily="'Figtree', sans-serif"
               fontWeight="extrabold"
-              fontSize="sm"
-              letterSpacing="0.04em"
+              fontSize={{ base: 'sm', sm: 'md' }}
+              letterSpacing="0.02em"
               color={textMain}
             >
-              PROYEK.ID
+              CuPI
             </Text>
           </HStack>
 
+          {/* Tiga Item Navigasi: CuPI | History Track | Profile */}
           <HStack
-            spacing={1}
-            display={{ base: 'none', sm: 'flex' }}
-            animation="contentReveal 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.16s both"
+            spacing={{ base: 0.5, sm: 1.5 }}
+            animation="contentReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both"
           >
-            {TOP_MENUS.map((item) => {
-              const isActive = activePage === item
+            {NAV_ITEMS.map((item) => {
+              const isActive = activeNav === item
               return (
                 <Box
                   as="button"
                   type="button"
                   key={item}
-                  onClick={() => handleSelectDestination(item)}
-                  px={3.5}
-                  py={1}
+                  onClick={() => setActiveNav(item)}
+                  aria-current={isActive ? 'page' : undefined}
+                  px={{ base: 2.5, sm: 3.5 }}
+                  py={1.5}
                   borderRadius="full"
-                  fontSize="sm"
-                  fontWeight={isActive ? 'semibold' : 'medium'}
-                  color={isActive ? textMain : textMuted}
-                  bg={isActive ? pillActiveBg : 'transparent'}
-                  border="1px solid"
-                  borderColor={isActive ? borderStrong : 'transparent'}
+                  fontSize={{ base: 'xs', sm: 'sm' }}
+                  fontWeight={isActive ? 'bold' : 'medium'}
+                  color={isActive ? primaryBtnText : textMuted}
+                  bg={isActive ? primaryBtnBg : 'transparent'}
                   cursor="pointer"
                   userSelect="none"
-                  _hover={{ bg: pillActiveBg, color: textMain }}
-                  _active={{ transform: 'scale(0.95)' }}
+                  whiteSpace="nowrap"
+                  transition="background-color 0.2s ease, color 0.2s ease, transform 0.15s ease"
+                  _hover={{
+                    bg: isActive ? primaryBtnHover : surfaceInteractive,
+                    color: isActive ? primaryBtnText : textMain,
+                  }}
+                  _active={{ transform: 'scale(0.96)' }}
                   _focusVisible={{
                     outline: '2px solid',
-                    outlineColor: accentColor,
+                    outlineColor: primaryGreen,
                     outlineOffset: '1px',
                   }}
                 >
@@ -873,19 +980,19 @@ function App() {
             })}
           </HStack>
 
+          {/* Tombol Toggle Mode Terang / Gelap */}
           <HStack
             spacing={2}
-            animation="contentReveal 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.22s both"
+            animation="contentReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both"
           >
-            {/* Tombol Toggle Tema dengan Feedback Press & Rotasi Halus */}
             <Box
               as="button"
               type="button"
-              onClick={handleThemeSwitch}
+              onClick={toggleColorMode}
               aria-label={
                 colorMode === 'dark'
-                  ? 'Beralih ke mode terang hijau daun'
-                  : 'Beralih ke mode gelap hijau hutan'
+                  ? 'Beralih ke mode terang'
+                  : 'Beralih ke mode gelap'
               }
               w="34px"
               h="34px"
@@ -893,17 +1000,21 @@ function App() {
               alignItems="center"
               justifyContent="center"
               borderRadius="full"
-              bg={pillActiveBg}
+              bg={surfaceCream}
               color={textMain}
               border="1px solid"
               borderColor={borderSubtle}
               cursor="pointer"
               userSelect="none"
-              _hover={{ borderColor: borderStrong, transform: 'scale(1.06)' }}
-              _active={{ transform: 'scale(0.88)' }}
+              _hover={{
+                borderColor: borderStrong,
+                bg: surfaceInteractive,
+                transform: 'scale(1.06)',
+              }}
+              _active={{ transform: 'scale(0.9)' }}
               _focusVisible={{
                 outline: '2px solid',
-                outlineColor: accentColor,
+                outlineColor: primaryGreen,
                 outlineOffset: '2px',
               }}
             >
@@ -913,7 +1024,7 @@ function App() {
                 display="inline-flex"
                 alignItems="center"
                 justifyContent="center"
-                animation="iconSwitch 0.38s cubic-bezier(0.22, 1, 0.36, 1) both"
+                animation="iconSwitch 0.36s cubic-bezier(0.22, 1, 0.36, 1) both"
               >
                 {colorMode === 'dark' ? (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
@@ -934,1123 +1045,1616 @@ function App() {
                 )}
               </Box>
             </Box>
-
-            <Box
-              as="button"
-              type="button"
-              onClick={() => handleSelectDestination('Dashboard')}
-              px={4}
-              py={1.5}
-              borderRadius="full"
-              bg={btnBg}
-              color={btnColor}
-              fontSize="xs"
-              fontWeight="bold"
-              cursor="pointer"
-              userSelect="none"
-              _hover={{ bg: btnHoverBg, transform: 'translateY(-1px)' }}
-              _active={{ transform: 'scale(0.95)' }}
-              _focusVisible={{
-                outline: '2px solid',
-                outlineColor: accentColor,
-                outlineOffset: '2px',
-              }}
-            >
-              {activePage === 'Dashboard' ? 'Di Dashboard' : 'Mulai'}
-            </Box>
           </HStack>
         </Flex>
       </Box>
 
-      {/* Area Konten Utama */}
+      {/* ================================================================== */}
+      {/* AREA KONTEN UTAMA                                                  */}
+      {/* ================================================================== */}
       <Flex
         as="main"
         flex="1"
         direction="column"
         align="center"
-        pos="relative"
-        zIndex={1}
-        pt={{ base: '96px', md: '112px' }}
+        w="100%"
+        pt={{ base: '92px', sm: '104px' }}
         pb={{ base: '48px', md: '64px' }}
         px={{ base: 4, sm: 6 }}
       >
         <Box
-          key={activePage}
+          key={activeNav}
           w="100%"
-          maxW="1120px"
-          animation="pageFadeUp 0.34s cubic-bezier(0.22, 1, 0.36, 1) both"
+          maxW="880px"
+          animation="pageFadeUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) both"
         >
           {/* ============================================================== */}
-          {/* 1. HALAMAN DASHBOARD SIKLUS RESIDU (OPERASIONAL PENUH)         */}
+          {/* 1. HALAMAN UTAMA: CuPI (PEMERIKSAAN KONDISI MAKANAN)           */}
           {/* ============================================================== */}
-          {activePage === 'Dashboard' && (
+          {activeNav === 'CuPI' && (
             <VStack spacing={6} align="stretch" w="100%">
-              {/* Header Dashboard Siklus Residu */}
-              <Flex
-                data-theme-transition="true"
-                direction={{ base: 'column', lg: 'row' }}
-                align={{ base: 'flex-start', lg: 'center' }}
-                justify="space-between"
-                gap={4}
-                p={{ base: 5, md: 6 }}
-                bg={surfaceBg}
-                borderRadius="2xl"
-                border="1px solid"
-                borderColor={borderSubtle}
-                boxShadow={elevatedShadow}
-              >
-                <Box>
-                  <HStack spacing={2.5} mb={2} flexWrap="wrap">
-                    <HStack
-                      spacing={1.5}
-                      px={2.5}
-                      py={0.5}
-                      borderRadius="md"
-                      bg={pillActiveBg}
-                      border="1px solid"
-                      borderColor={borderSubtle}
-                    >
-                      <Box w="6px" h="6px" borderRadius="full" bg={accentColor} />
-                      <Text fontSize="11px" fontWeight="bold" color={textMain}>
-                        Data Simulasi Operasional
-                      </Text>
-                    </HStack>
-                    <Text fontSize="xs" color={textMuted}>
-                      Periode Pemantauan: Mei 2026
-                    </Text>
-                  </HStack>
-
+              {/* Editorial Header Terbuka (Tanpa Card-in-Card) */}
+              <Box px={{ base: 1, sm: 2 }}>
+                <HStack spacing={2} mb={2}>
+                  <Box w="7px" h="7px" borderRadius="full" bg={primaryGreen} />
                   <Text
-                    fontFamily="'Figtree', sans-serif"
-                    fontSize={{ base: '2xl', md: '3xl' }}
-                    fontWeight="extrabold"
-                    color={textMain}
-                    letterSpacing="-0.02em"
-                    lineHeight="1.2"
-                  >
-                    Dashboard Siklus Residu
-                  </Text>
-                  <Text fontSize="sm" color={textMuted} mt={1} maxW="640px">
-                    Pemantauan alur pengelolaan residu mulai dari pencatatan sumber, pengumpulan, pemilahan, pengolahan, hingga penanganan residu akhir.
-                  </Text>
-                </Box>
-
-                {/* Kontrol Periode & Tombol Tambah Catatan */}
-                <HStack spacing={2.5} flexWrap="wrap">
-                  <HStack
-                    p={1}
-                    bg={surfaceSecondary}
-                    borderRadius="lg"
-                    border="1px solid"
-                    borderColor={borderSubtle}
-                    spacing={1}
-                  >
-                    {[
-                      { id: 'SEMUA', label: '30 Hari (Simulasi)' },
-                      { id: '7H', label: '7 Hari Terakhir' },
-                    ].map((tab) => {
-                      const active = periodFilter === tab.id
-                      return (
-                        <Box
-                          as="button"
-                          type="button"
-                          key={tab.id}
-                          onClick={() => setPeriodFilter(tab.id)}
-                          px={3}
-                          py={1.5}
-                          borderRadius="md"
-                          fontSize="xs"
-                          fontWeight={active ? 'bold' : 'medium'}
-                          bg={active ? surfaceBg : 'transparent'}
-                          color={active ? textMain : textMuted}
-                          border="1px solid"
-                          borderColor={active ? borderSubtle : 'transparent'}
-                          cursor="pointer"
-                          _hover={{ color: textMain }}
-                          _active={{ transform: 'scale(0.97)' }}
-                        >
-                          {tab.label}
-                        </Box>
-                      )
-                    })}
-                  </HStack>
-
-                  <Box
-                    as="button"
-                    type="button"
-                    onClick={() => setIsFormOpen((prev) => !prev)}
-                    px={4}
-                    py={2}
-                    borderRadius="lg"
-                    bg={btnBg}
-                    color={btnColor}
                     fontSize="xs"
                     fontWeight="bold"
-                    cursor="pointer"
-                    display="inline-flex"
-                    alignItems="center"
-                    gap={1.5}
-                    _hover={{ bg: btnHoverBg, transform: 'translateY(-1px)' }}
-                    _active={{ transform: 'scale(0.97)' }}
-                    _focusVisible={{
-                      outline: '2px solid',
-                      outlineColor: accentColor,
-                      outlineOffset: '2px',
-                    }}
+                    letterSpacing="0.04em"
+                    textTransform="uppercase"
+                    color={primaryGreen}
                   >
-                    <span>{isFormOpen ? 'Tutup Form' : '+ Catat Residu Baru'}</span>
-                  </Box>
-                </HStack>
-              </Flex>
-
-              {/* Notifikasi Feedback Aksi Simulasi */}
-              {formNotice && (
-                <Flex
-                  align="center"
-                  justify="space-between"
-                  px={4}
-                  py={3}
-                  bg={pillActiveBg}
-                  border="1px solid"
-                  borderColor={borderStrong}
-                  borderRadius="xl"
-                  animation="pageFadeUp 0.25s ease both"
-                >
-                  <Text fontSize="xs" fontWeight="semibold" color={textMain}>
-                    {formNotice}
-                  </Text>
-                  <Box
-                    as="button"
-                    type="button"
-                    onClick={() => setFormNotice('')}
-                    fontSize="xs"
-                    fontWeight="bold"
-                    color={textMuted}
-                    px={2}
-                  >
-                    Tutup
-                  </Box>
-                </Flex>
-              )}
-
-              {/* Form Pencatatan Residu Baru (Simulasi Lokal Frontend) */}
-              {isFormOpen && (
-                <Box
-                  as="form"
-                  onSubmit={handleAddSimulatedRecord}
-                  p={5}
-                  bg={cardMainBg}
-                  borderRadius="xl"
-                  border="1px solid"
-                  borderColor={borderStrong}
-                  animation="pageFadeUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) both"
-                >
-                  <Flex align="center" justify="space-between" mb={3} flexWrap="wrap" gap={2}>
-                    <Box>
-                      <Text fontFamily="'Figtree', sans-serif" fontWeight="bold" fontSize="md">
-                        Tambah Catatan Residu (Mode Demo Lokal)
-                      </Text>
-                      <Text fontSize="xs" color={textMuted}>
-                        Data disimpan di memori browser untuk simulasi perhitungan KPI dan alur Siklus Residu.
-                      </Text>
-                    </Box>
-                  </Flex>
-
-                  <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} spacing={3} mb={4}>
-                    <Box>
-                      <Text fontSize="xs" fontWeight="semibold" mb={1}>
-                        Sumber Residu
-                      </Text>
-                      <Box
-                        as="input"
-                        type="text"
-                        value={newSource}
-                        onChange={(e) => setNewSource(e.target.value)}
-                        placeholder="Mis. Pos Kumpul RT 04"
-                        w="100%"
-                        px={3}
-                        py={2}
-                        fontSize="xs"
-                        bg={inputBg}
-                        color={textMain}
-                        borderRadius="md"
-                        border="1px solid"
-                        borderColor={borderSubtle}
-                      />
-                    </Box>
-
-                    <Box>
-                      <Text fontSize="xs" fontWeight="semibold" mb={1}>
-                        Kategori Residu
-                      </Text>
-                      <Box
-                        as="select"
-                        value={newCategory}
-                        onChange={(e) => setNewCategory(e.target.value)}
-                        w="100%"
-                        px={3}
-                        py={2}
-                        fontSize="xs"
-                        bg={inputBg}
-                        color={textMain}
-                        borderRadius="md"
-                        border="1px solid"
-                        borderColor={borderSubtle}
-                      >
-                        <option value="Organik Basah">Organik Basah</option>
-                        <option value="Ampas Organik">Ampas Organik</option>
-                        <option value="Minyak Residu">Minyak Residu</option>
-                        <option value="Serat & Kemasan">Serat & Kemasan</option>
-                      </Box>
-                    </Box>
-
-                    <Box>
-                      <Text fontSize="xs" fontWeight="semibold" mb={1}>
-                        Volume (kg)
-                      </Text>
-                      <Box
-                        as="input"
-                        type="number"
-                        min="1"
-                        max="5000"
-                        value={newVolume}
-                        onChange={(e) => setNewVolume(e.target.value)}
-                        placeholder="Mis. 25"
-                        w="100%"
-                        px={3}
-                        py={2}
-                        fontSize="xs"
-                        bg={inputBg}
-                        color={textMain}
-                        borderRadius="md"
-                        border="1px solid"
-                        borderColor={borderSubtle}
-                      />
-                    </Box>
-
-                    <Box>
-                      <Text fontSize="xs" fontWeight="semibold" mb={1}>
-                        Tahap Saat Ini
-                      </Text>
-                      <Box
-                        as="select"
-                        value={newStage}
-                        onChange={(e) => setNewStage(e.target.value)}
-                        w="100%"
-                        px={3}
-                        py={2}
-                        fontSize="xs"
-                        bg={inputBg}
-                        color={textMain}
-                        borderRadius="md"
-                        border="1px solid"
-                        borderColor={borderSubtle}
-                      >
-                        <option value="Residu Masuk">01 - Residu Masuk</option>
-                        <option value="Pengumpulan">02 - Pengumpulan</option>
-                        <option value="Pemilahan">03 - Pemilahan</option>
-                        <option value="Pengolahan">04 - Pengolahan / Pemanfaatan</option>
-                        <option value="Residu Akhir">05 - Residu Akhir</option>
-                      </Box>
-                    </Box>
-                  </SimpleGrid>
-
-                  <HStack justify="flex-end" spacing={2}>
-                    <Box
-                      as="button"
-                      type="button"
-                      onClick={() => setIsFormOpen(false)}
-                      px={3.5}
-                      py={1.5}
-                      borderRadius="md"
-                      fontSize="xs"
-                      fontWeight="semibold"
-                      bg={surfaceSecondary}
-                      color={textMain}
-                    >
-                      Batal
-                    </Box>
-                    <Box
-                      as="button"
-                      type="submit"
-                      px={4}
-                      py={1.5}
-                      borderRadius="md"
-                      fontSize="xs"
-                      fontWeight="bold"
-                      bg={btnBg}
-                      color={btnColor}
-                      _hover={{ bg: btnHoverBg }}
-                    >
-                      Simpan ke Simulasi
-                    </Box>
-                  </HStack>
-                </Box>
-              )}
-
-              {/* 4 KPI Ringkasan Utama dengan Count-Up Animation */}
-              <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} spacing={4}>
-                <Card
-                  variant="kpi"
-                  title="Total Residu Masuk"
-                  metricValue={<AnimatedNumber value={kpiMetrics.totalMasuk} />}
-                  metricUnit="kg"
-                  metricSubtext={`Dari ${filteredByPeriod.length} catatan sumber (Simulasi)`}
-                  icon={
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                    </svg>
-                  }
-                />
-
-                <Card
-                  variant="kpi"
-                  title="Sedang Diproses"
-                  metricValue={<AnimatedNumber value={kpiMetrics.sedangDiproses} />}
-                  metricUnit="kg"
-                  metricSubtext="Tahap masuk, pengumpulan & pemilahan"
-                  icon={
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="23 4 23 10 17 10" />
-                      <polyline points="1 20 1 14 7 14" />
-                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                    </svg>
-                  }
-                />
-
-                <Card
-                  variant="kpi"
-                  title="Berhasil Dimanfaatkan"
-                  metricValue={<AnimatedNumber value={kpiMetrics.dimanfaatkan} />}
-                  metricUnit="kg"
-                  metricSubtext="Disalurkan ke tahap pengolahan lanjutan"
-                  isActive={true}
-                  icon={
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                      <polyline points="22 4 12 14.01 9 11.01" />
-                    </svg>
-                  }
-                />
-
-                <Card
-                  variant="kpi"
-                  title="Residu Akhir Tersisa"
-                  metricValue={<AnimatedNumber value={kpiMetrics.residuAkhir} />}
-                  metricUnit="kg"
-                  metricSubtext="Sisa yang memerlukan penanganan akhir"
-                  icon={
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="12" y1="8" x2="12" y2="12" />
-                      <line x1="12" y1="16" x2="12.01" y2="16" />
-                    </svg>
-                  }
-                />
-              </SimpleGrid>
-
-              {/* Visualisasi Alur Siklus Residu (5 Tahap) */}
-              <Card
-                variant="panel"
-                title="Alur Perjalanan Siklus Residu"
-                description="Pemetaan volume residu pada setiap tahap proses (Data simulasi). Klik salah satu tahap untuk memfilter daftar aktivitas di bawah."
-                badge="5 Tahap Proses"
-              >
-                <SimpleGrid columns={{ base: 1, md: 5 }} spacing={3} mt={2}>
-                  {lifecycleStages.map((stg) => {
-                    const isStageSelected = stageFilter === stg.id
-                    return (
-                      <Box
-                        as="button"
-                        type="button"
-                        key={stg.id}
-                        onClick={() =>
-                          setStageFilter((prev) => (prev === stg.id ? 'SEMUA' : stg.id))
-                        }
-                        textAlign="left"
-                        p={3.5}
-                        borderRadius="xl"
-                        bg={isStageSelected ? pillActiveBg : surfaceBg}
-                        border="1px solid"
-                        borderColor={isStageSelected ? accentColor : borderSubtle}
-                        cursor="pointer"
-                        transition="all 0.2s ease"
-                        _hover={{
-                          borderColor: borderStrong,
-                          transform: 'translateY(-2px)',
-                        }}
-                        _active={{ transform: 'scale(0.99)' }}
-                      >
-                        <Flex align="center" justify="space-between" mb={2}>
-                          <Text
-                            fontSize="11px"
-                            fontWeight="extrabold"
-                            px={2}
-                            py={0.5}
-                            borderRadius="md"
-                            bg={surfaceSecondary}
-                            color={textMain}
-                          >
-                            Tahap {stg.step}
-                          </Text>
-                          <Text fontSize="xs" fontWeight="bold" color={accentColor}>
-                            {stg.ratio}%
-                          </Text>
-                        </Flex>
-
-                        <Text
-                          fontFamily="'Figtree', sans-serif"
-                          fontSize="sm"
-                          fontWeight="bold"
-                          color={textMain}
-                          lineHeight="1.3"
-                        >
-                          {stg.title}
-                        </Text>
-                        <Text fontSize="11px" color={textMuted} mt={1} minH="32px">
-                          {stg.desc}
-                        </Text>
-
-                        <Flex align="baseline" justify="space-between" mt={3} mb={1.5}>
-                          <Text fontSize="md" fontWeight="extrabold" color={textMain}>
-                            {stg.volume} <Box as="span" fontSize="xs" fontWeight="normal">kg</Box>
-                          </Text>
-                          <Text fontSize="11px" color={textMuted}>
-                            {stg.count} batch
-                          </Text>
-                        </Flex>
-
-                        <Box
-                          w="100%"
-                          h="6px"
-                          bg={surfaceSecondary}
-                          borderRadius="full"
-                          overflow="hidden"
-                        >
-                          <Box
-                            h="100%"
-                            w={`${Math.max(stg.ratio, 6)}%`}
-                            bg={accentColor}
-                            borderRadius="full"
-                            transformOrigin="left"
-                            animation="progressFillHorizontal 0.65s cubic-bezier(0.22, 1, 0.36, 1) both"
-                          />
-                        </Box>
-                      </Box>
-                    )
-                  })}
-                </SimpleGrid>
-              </Card>
-
-              {/* Panel Analitik: Grafik Tren Mingguan & Komposisi Kategori */}
-              <SimpleGrid columns={{ base: 1, lg: 12 }} spacing={4}>
-                <Box gridColumn={{ base: 'span 1', lg: 'span 7' }}>
-                  <Card
-                    variant="panel"
-                    title="Tren Residu Masuk vs Dimanfaatkan"
-                    description="Perbandingan harian volume residu yang dicatat dengan yang berhasil diolah (kg - Contoh data simulasi 7 hari)."
-                  >
-                    <Flex
-                      align="flex-end"
-                      justify="space-between"
-                      h="180px"
-                      pt={6}
-                      pb={2}
-                      px={{ base: 1, sm: 3 }}
-                      gap={{ base: 2, sm: 4 }}
-                      borderBottom="1px solid"
-                      borderColor={borderSubtle}
-                    >
-                      {WEEKLY_TREND_SIMULATION.map((day, index) => {
-                        const maxScale = 80
-                        const inHeight = Math.round((day.masuk / maxScale) * 100)
-                        const usedHeight = Math.round((day.dimanfaatkan / maxScale) * 100)
-                        return (
-                          <VStack key={day.label} spacing={2} flex="1" h="100%" justify="flex-end">
-                            <HStack spacing={1.5} align="flex-end" h="130px" w="100%" justify="center">
-                              <Box
-                                title={`Residu Masuk: ${day.masuk} kg`}
-                                w={{ base: '10px', sm: '14px' }}
-                                h={`${inHeight}%`}
-                                bg={highlightSoft}
-                                borderRadius="sm"
-                                transformOrigin="bottom"
-                                animation={`barGrowUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) ${index * 0.05}s both`}
-                              />
-                              <Box
-                                title={`Dimanfaatkan: ${day.dimanfaatkan} kg`}
-                                w={{ base: '10px', sm: '14px' }}
-                                h={`${usedHeight}%`}
-                                bg={btnBg}
-                                borderRadius="sm"
-                                transformOrigin="bottom"
-                                animation={`barGrowUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) ${index * 0.06}s both`}
-                              />
-                            </HStack>
-                            <Text fontSize="11px" fontWeight="semibold" color={textMuted}>
-                              {day.label}
-                            </Text>
-                          </VStack>
-                        )
-                      })}
-                    </Flex>
-
-                    <HStack justify="space-between" mt={3} flexWrap="wrap" gap={2}>
-                      <HStack spacing={4}>
-                        <HStack spacing={1.5}>
-                          <Box w="10px" h="10px" borderRadius="xs" bg={highlightSoft} />
-                          <Text fontSize="xs" color={textMuted}>
-                            Residu Masuk (kg)
-                          </Text>
-                        </HStack>
-                        <HStack spacing={1.5}>
-                          <Box w="10px" h="10px" borderRadius="xs" bg={btnBg} />
-                          <Text fontSize="xs" color={textMuted}>
-                            Berhasil Dimanfaatkan (kg)
-                          </Text>
-                        </HStack>
-                      </HStack>
-                      <Text fontSize="11px" color={textMuted}>
-                        Satuan: Kilogram (kg)
-                      </Text>
-                    </HStack>
-                  </Card>
-                </Box>
-
-                <Box gridColumn={{ base: 'span 1', lg: 'span 5' }}>
-                  <Card
-                    variant="panel"
-                    title="Komposisi Kategori Residu"
-                    description="Proporsi berat residu berdasarkan karakteristik material pada periode terpilih."
-                  >
-                    <VStack spacing={3.5} align="stretch" mt={3}>
-                      {categoryBreakdown.map((cat) => (
-                        <Box key={cat.name}>
-                          <Flex justify="space-between" fontSize="xs" mb={1}>
-                            <Text fontWeight="bold" color={textMain}>
-                              {cat.name}
-                            </Text>
-                            <Text color={textMuted} fontWeight="semibold">
-                              {cat.volume} kg ({cat.percentage}%)
-                            </Text>
-                          </Flex>
-                          <Box
-                            w="100%"
-                            h="8px"
-                            bg={surfaceSecondary}
-                            borderRadius="full"
-                            overflow="hidden"
-                          >
-                            <Box
-                              h="100%"
-                              w={`${Math.max(cat.percentage, 5)}%`}
-                              bg={btnBg}
-                              borderRadius="full"
-                              transformOrigin="left"
-                              animation="progressFillHorizontal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both"
-                            />
-                          </Box>
-                        </Box>
-                      ))}
-                    </VStack>
-
-                    <Box
-                      mt={5}
-                      p={3}
-                      borderRadius="lg"
-                      bg={surfaceBg}
-                      border="1px solid"
-                      borderColor={borderSubtle}
-                    >
-                      <Text fontSize="xs" color={textMuted} lineHeight="1.5">
-                        Total terdata:{' '}
-                        <Box as="span" fontWeight="bold" color={textMain}>
-                          {kpiMetrics.totalMasuk} kg
-                        </Box>{' '}
-                        dari {categoryBreakdown.length} kategori material (Data simulasi).
-                      </Text>
-                    </Box>
-                  </Card>
-                </Box>
-              </SimpleGrid>
-
-              {/* Daftar Aktivitas Residu Terbaru & Aksi Cepat */}
-              <Card
-                variant="panel"
-                title="Catatan Aktivitas Siklus Residu"
-                description="Riwayat pencatatan masuk dan status tahapan pemrosesan residu saat ini."
-                footer={
-                  <Flex align="center" justify="space-between" flexWrap="wrap" gap={2}>
-                    <Text fontSize="xs" color={textMuted}>
-                      Menampilkan {filteredActivities.length} dari {residueLogs.length} catatan simulasi.
-                    </Text>
-                    <HStack spacing={3}>
-                      <Box
-                        as="button"
-                        type="button"
-                        onClick={() => handleSelectDestination('Analitik')}
-                        fontSize="xs"
-                        fontWeight="bold"
-                        color={accentColor}
-                        _hover={{ textDecoration: 'underline' }}
-                      >
-                        Lihat Ringkasan Analitik →
-                      </Box>
-                    </HStack>
-                  </Flex>
-                }
-              >
-                {/* Bar Filter Status Tahapan */}
-                <HStack spacing={1.5} mb={4} flexWrap="wrap">
-                  {['SEMUA', 'Residu Masuk', 'Pengumpulan', 'Pemilahan', 'Pengolahan', 'Residu Akhir'].map(
-                    (st) => {
-                      const active = stageFilter === st
-                      return (
-                        <Box
-                          as="button"
-                          type="button"
-                          key={st}
-                          onClick={() => setStageFilter(st)}
-                          px={3}
-                          py={1}
-                          borderRadius="full"
-                          fontSize="xs"
-                          fontWeight={active ? 'bold' : 'medium'}
-                          bg={active ? btnBg : surfaceBg}
-                          color={active ? btnColor : textMuted}
-                          border="1px solid"
-                          borderColor={active ? btnBg : borderSubtle}
-                          cursor="pointer"
-                          _hover={{ borderColor: borderStrong }}
-                        >
-                          {st === 'SEMUA' ? 'Semua Tahap' : st}
-                        </Box>
-                      )
-                    }
-                  )}
-                </HStack>
-
-                {filteredActivities.length === 0 ? (
-                  <Box
-                    p={8}
-                    textAlign="center"
-                    borderRadius="xl"
-                    bg={surfaceBg}
-                    border="1px dashed"
-                    borderColor={borderSubtle}
-                  >
-                    <Text fontWeight="bold" fontSize="sm" color={textMain}>
-                      Belum ada catatan pada filter tahap ini
-                    </Text>
-                    <Text fontSize="xs" color={textMuted} mt={1}>
-                      Ubah filter tahap di atas atau tambahkan catatan simulasi baru.
-                    </Text>
-                  </Box>
-                ) : (
-                  <Box overflowX="auto">
-                    <Box as="table" w="100%" style={{ borderCollapse: 'collapse' }}>
-                      <Box as="thead">
-                        <Box
-                          as="tr"
-                          borderBottom="1px solid"
-                          borderColor={borderSubtle}
-                          textAlign="left"
-                        >
-                          <Box as="th" py={2.5} px={3} fontSize="11px" color={textMuted} textTransform="uppercase">
-                            ID & Waktu
-                          </Box>
-                          <Box as="th" py={2.5} px={3} fontSize="11px" color={textMuted} textTransform="uppercase">
-                            Sumber Pencatatan
-                          </Box>
-                          <Box as="th" py={2.5} px={3} fontSize="11px" color={textMuted} textTransform="uppercase">
-                            Kategori
-                          </Box>
-                          <Box as="th" py={2.5} px={3} fontSize="11px" color={textMuted} textTransform="uppercase">
-                            Volume
-                          </Box>
-                          <Box as="th" py={2.5} px={3} fontSize="11px" color={textMuted} textTransform="uppercase">
-                            Tahap Siklus
-                          </Box>
-                        </Box>
-                      </Box>
-                      <Box as="tbody">
-                        {filteredActivities.map((item) => (
-                          <Box
-                            as="tr"
-                            key={item.id}
-                            borderBottom="1px solid"
-                            borderColor={borderSubtle}
-                            _hover={{ bg: surfaceBg }}
-                          >
-                            <Box as="td" py={3} px={3}>
-                              <Text fontSize="xs" fontWeight="bold" color={textMain}>
-                                {item.id}
-                              </Text>
-                              <Text fontSize="11px" color={textMuted}>
-                                {item.date}
-                              </Text>
-                            </Box>
-                            <Box as="td" py={3} px={3}>
-                              <Text fontSize="xs" fontWeight="semibold" color={textMain}>
-                                {item.source}
-                              </Text>
-                            </Box>
-                            <Box as="td" py={3} px={3}>
-                              <Text fontSize="xs" color={textMuted}>
-                                {item.category}
-                              </Text>
-                            </Box>
-                            <Box as="td" py={3} px={3}>
-                              <Text fontSize="xs" fontWeight="bold" color={textMain}>
-                                {item.volume} {item.unit}
-                              </Text>
-                            </Box>
-                            <Box as="td" py={3} px={3}>
-                              <Box
-                                as="span"
-                                display="inline-block"
-                                px={2.5}
-                                py={0.5}
-                                borderRadius="full"
-                                fontSize="11px"
-                                fontWeight="bold"
-                                bg={
-                                  item.stage === 'Pengolahan'
-                                    ? pillActiveBg
-                                    : surfaceSecondary
-                                }
-                                color={textMain}
-                                border="1px solid"
-                                borderColor={borderSubtle}
-                              >
-                                {item.stage}
-                              </Box>
-                            </Box>
-                          </Box>
-                        ))}
-                      </Box>
-                    </Box>
-                  </Box>
-                )}
-              </Card>
-            </VStack>
-          )}
-
-          {/* ============================================================== */}
-          {/* 2. HALAMAN BERANDA                                             */}
-          {/* ============================================================== */}
-          {activePage === 'Beranda' && (
-            <VStack spacing={7} w="100%" maxW="940px" mx="auto">
-              <VStack spacing={3} textAlign="center" maxW="620px">
-                <HStack
-                  data-theme-transition="true"
-                  spacing={2}
-                  px={3.5}
-                  py={1}
-                  borderRadius="full"
-                  bg={surfaceBg}
-                  border="1px solid"
-                  borderColor={borderSubtle}
-                >
-                  <Box w="6px" h="6px" borderRadius="full" bg={accentColor} />
-                  <Text fontSize="xs" fontWeight="semibold" color={textMuted}>
-                    Halaman Aktif: {activePage}
+                    CuPI • Food Condition & Safety Assistant
                   </Text>
                 </HStack>
 
                 <Text
                   fontFamily="'Figtree', sans-serif"
-                  fontSize={{ base: '2xl', sm: '3xl', md: '4xl' }}
+                  fontSize={{ base: '2xl', sm: '3xl' }}
                   fontWeight="extrabold"
                   letterSpacing="-0.02em"
                   lineHeight="1.2"
                   color={textMain}
                 >
-                  Pemantauan & Pengelolaan Siklus Residu Terpadu
+                  Periksa Kelayakan Makanan dari Waktu, Penyimpanan, dan Fisik
                 </Text>
 
-                <Text fontSize="sm" color={textMuted} lineHeight="1.65">
-                  Pantau perjalanan residu mulai dari pencatatan sumber, pengumpulan, pemilahan, hingga pemanfaatan kembali dalam satu dashboard operasional yang terstruktur.
+                <Text fontSize="sm" color={textMuted} mt={2} maxW="720px" lineHeight="1.65">
+                  Penilaian mengutamakan{' '}
+                  <Box as="span" fontWeight="semibold" color={textMain}>
+                    durasi waktu dan kondisi suhu penyimpanan
+                  </Box>{' '}
+                  sebagai faktor penentu utama, dilengkapi pengamatan indera serta foto konteks visual. Makanan yang tampak atau berbau normal tetap berisiko apabila melewati batas waktu suhu ruang.
                 </Text>
-              </VStack>
+              </Box>
 
-              {/* Featured Card Utama yang Mengarahkan Langsung ke Dashboard Siklus Residu */}
+              {/* Panel Tunggal Pemeriksaan Makanan (Tanpa Nested Cards) */}
               <Card
-                variant="featured"
-                title="Belajar & Kelola Siklus Residu"
-                description={`Saat ini terdapat ${residueLogs.length} catatan simulasi dengan total volume ${kpiMetrics.totalMasuk} kg residu terdata. Buka Dashboard Siklus Residu untuk memeriksa tahapan proses, grafik komposisi, atau mencatat data residu baru.`}
-                badge="Mode Simulasi Siap"
-                isActive={true}
-                icon={
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="7" height="9" rx="1.5" />
-                    <rect x="14" y="3" width="7" height="5" rx="1.5" />
-                    <rect x="14" y="12" width="7" height="9" rx="1.5" />
-                    <rect x="3" y="16" width="7" height="5" rx="1.5" />
-                  </svg>
+                as="form"
+                onSubmit={handleRunAssessment}
+                surface="sage"
+                title="Pemeriksaan Kondisi Makanan"
+                subtitle="Isi data waktu, tempat penyimpanan, dan hasil pengamatan langsung Anda."
+                headerAction={
+                  <HStack spacing={1.5} flexWrap="wrap">
+                    <Text fontSize="11px" color={textMuted} mr={1}>
+                      Uji contoh:
+                    </Text>
+                    <Box
+                      as="button"
+                      type="button"
+                      onClick={() => handleFillSampleInput('fridge_watch')}
+                      px={2.5}
+                      py={1}
+                      borderRadius="md"
+                      bg={surfaceCream}
+                      border="1px solid"
+                      borderColor={borderSubtle}
+                      fontSize="11px"
+                      fontWeight="semibold"
+                      color={textMain}
+                      cursor="pointer"
+                      _hover={{ borderColor: borderStrong, bg: surfaceInteractive }}
+                    >
+                      Simpan Kulkas (14j)
+                    </Box>
+                    <Box
+                      as="button"
+                      type="button"
+                      onClick={() => handleFillSampleInput('room_risk')}
+                      px={2.5}
+                      py={1}
+                      borderRadius="md"
+                      bg={surfaceCream}
+                      border="1px solid"
+                      borderColor={borderSubtle}
+                      fontSize="11px"
+                      fontWeight="semibold"
+                      color={textMain}
+                      cursor="pointer"
+                      _hover={{ borderColor: borderStrong, bg: surfaceInteractive }}
+                    >
+                      Suhu Ruang (5.5j)
+                    </Box>
+                  </HStack>
                 }
                 footer={
                   <Flex
-                    w="100%"
-                    align="center"
+                    direction={{ base: 'column', sm: 'row' }}
+                    align={{ base: 'stretch', sm: 'center' }}
                     justify="space-between"
-                    flexWrap="wrap"
                     gap={3}
                   >
-                    <HStack spacing={4} flexWrap="wrap">
-                      <Text fontSize="xs" color={textMuted}>
-                        Residu Masuk:{' '}
-                        <Box as="span" fontWeight="bold" color={textMain}>
-                          {kpiMetrics.totalMasuk} kg
-                        </Box>
-                      </Text>
-                      <Text fontSize="xs" color={textMuted}>
-                        Dimanfaatkan:{' '}
-                        <Box as="span" fontWeight="bold" color={textMain}>
-                          {kpiMetrics.dimanfaatkan} kg
-                        </Box>
-                      </Text>
-                    </HStack>
+                    <Text fontSize="xs" color={textMuted}>
+                      {profile.autoSaveHistory
+                        ? 'Hasil pemeriksaan otomatis dicatat ke History Track lokal.'
+                        : 'Penyimpanan otomatis nonaktif — Anda dapat menyimpan manual setelah evaluasi.'}
+                    </Text>
 
-                    <HStack spacing={2.5}>
+                    <HStack spacing={2.5} justify="flex-end">
                       <Box
                         as="button"
                         type="button"
-                        onClick={openMenu}
-                        px={3.5}
-                        py={1.5}
+                        onClick={handleResetForm}
+                        px={4}
+                        py={2}
                         borderRadius="lg"
-                        bg={surfaceBg}
+                        bg={surfaceCream}
                         color={textMain}
                         border="1px solid"
                         borderColor={borderSubtle}
                         fontSize="xs"
-                        fontWeight="semibold"
-                        cursor="pointer"
-                        _hover={{ bg: pillActiveBg }}
-                      >
-                        Menu Navigasi
-                      </Box>
-                      <Box
-                        as="button"
-                        type="button"
-                        onClick={() => handleSelectDestination('Dashboard')}
-                        px={4}
-                        py={1.5}
-                        borderRadius="lg"
-                        bg={btnBg}
-                        color={btnColor}
-                        fontSize="xs"
                         fontWeight="bold"
                         cursor="pointer"
-                        _hover={{ bg: btnHoverBg, transform: 'translateY(-1px)' }}
-                        _active={{ transform: 'scale(0.97)' }}
+                        _hover={{ bg: surfaceInteractive }}
                       >
-                        Buka Dashboard
+                        Reset
+                      </Box>
+
+                      <Box
+                        as="button"
+                        type="submit"
+                        disabled={isAnalyzing}
+                        px={5}
+                        py={2}
+                        borderRadius="lg"
+                        bg={primaryBtnBg}
+                        color={primaryBtnText}
+                        fontSize="xs"
+                        fontWeight="bold"
+                        cursor={isAnalyzing ? 'wait' : 'pointer'}
+                        display="inline-flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        gap={2}
+                        _hover={{
+                          bg: isAnalyzing ? primaryBtnBg : primaryBtnHover,
+                          transform: isAnalyzing ? 'none' : 'translateY(-1px)',
+                        }}
+                        _active={{ transform: 'scale(0.98)' }}
+                      >
+                        {isAnalyzing ? (
+                          <>
+                            <Box
+                              w="7px"
+                              h="7px"
+                              borderRadius="full"
+                              bg={primaryBtnText}
+                              animation="loadingDotPulse 0.9s infinite"
+                            />
+                            <span>Memeriksa Riwayat Waktu & Suhu...</span>
+                          </>
+                        ) : (
+                          <span>Periksa Kondisi Makanan</span>
+                        )}
                       </Box>
                     </HStack>
                   </Flex>
                 }
-              />
+              >
+                <VStack spacing={6} align="stretch">
+                  {/* SEKSI 1: Nama & Kategori Makanan */}
+                  <Box>
+                    <Text
+                      fontSize="xs"
+                      fontWeight="bold"
+                      color={primaryGreen}
+                      mb={3}
+                    >
+                      1. Identitas & Jenis Makanan
+                    </Text>
 
-              {/* Grid Kartu Navigasi Modul */}
-              <Box w="100%">
-                <Flex align="center" justify="space-between" mb={3} px={1}>
-                  <Text
-                    fontSize="xs"
-                    fontWeight="bold"
-                    textTransform="uppercase"
-                    letterSpacing="0.07em"
-                    color={textMuted}
-                  >
-                    Jelajahi Modul Aplikasi
-                  </Text>
-                  <Text fontSize="xs" color={textMuted}>
-                    {NAV_DESTINATIONS.length} Halaman Tersedia
-                  </Text>
-                </Flex>
+                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                      <Box>
+                        <Text
+                          as="label"
+                          htmlFor="food-name-input"
+                          fontSize="xs"
+                          fontWeight="semibold"
+                          display="block"
+                          mb={1.5}
+                        >
+                          Nama Makanan *
+                        </Text>
+                        <Box
+                          as="input"
+                          id="food-name-input"
+                          type="text"
+                          value={foodName}
+                          onChange={(e) => {
+                            setFoodName(e.target.value)
+                            if (formErrors.foodName) {
+                              setFormErrors((prev) => ({ ...prev, foodName: '' }))
+                            }
+                          }}
+                          placeholder="Mis. Sayur Sop, Ayam Goreng, Puding Susu"
+                          w="100%"
+                          px={3.5}
+                          py={2}
+                          fontSize="sm"
+                          bg={inputBg}
+                          color={textMain}
+                          borderRadius="lg"
+                          border="1px solid"
+                          borderColor={formErrors.foodName ? redStatus : borderSubtle}
+                          _focusVisible={{
+                            outline: '2px solid',
+                            outlineColor: primaryGreen,
+                          }}
+                        />
+                        {formErrors.foodName && (
+                          <Text fontSize="xs" color={redStatus} fontWeight="semibold" mt={1}>
+                            {formErrors.foodName}
+                          </Text>
+                        )}
+                      </Box>
 
-                <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} spacing={4} w="100%">
-                  {NAV_DESTINATIONS.map((dest) => {
-                    const isSelected = activePage === dest.id
-                    return (
-                      <Card
-                        key={dest.id}
-                        title={dest.label}
-                        description={dest.desc}
-                        icon={dest.icon}
-                        isActive={isSelected}
-                        badge={isSelected ? 'Aktif' : null}
-                        compact
-                        onClick={() => handleSelectDestination(dest.id)}
+                      <Box>
+                        <Text
+                          as="label"
+                          htmlFor="food-category-select"
+                          fontSize="xs"
+                          fontWeight="semibold"
+                          display="block"
+                          mb={1.5}
+                        >
+                          Kelompok Makanan
+                        </Text>
+                        <Box
+                          as="select"
+                          id="food-category-select"
+                          value={categoryId}
+                          onChange={(e) => setCategoryId(e.target.value)}
+                          w="100%"
+                          px={3}
+                          py={2}
+                          fontSize="sm"
+                          bg={inputBg}
+                          color={textMain}
+                          borderRadius="lg"
+                          border="1px solid"
+                          borderColor={borderSubtle}
+                          _focusVisible={{
+                            outline: '2px solid',
+                            outlineColor: primaryGreen,
+                          }}
+                        >
+                          {FOOD_CATEGORIES.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                              {cat.label}
+                            </option>
+                          ))}
+                        </Box>
+                        <Text fontSize="11px" color={textMuted} mt={1}>
+                          {
+                            (
+                              FOOD_CATEGORIES.find((c) => c.id === categoryId) ||
+                              FOOD_CATEGORIES[0]
+                            ).hint
+                          }
+                        </Text>
+                      </Box>
+                    </SimpleGrid>
+                  </Box>
+
+                  {/* Garis Pemisah Seksi */}
+                  <Box borderTop="1px solid" borderColor={borderSubtle} />
+
+                  {/* SEKSI 2: Faktor Utama — Durasi Waktu & Kondisi Penyimpanan */}
+                  <Box>
+                    <Flex align="center" justify="space-between" mb={3} flexWrap="wrap" gap={2}>
+                      <Text fontSize="xs" fontWeight="bold" color={primaryGreen}>
+                        2. Riwayat Waktu & Suhu Penyimpanan (Penentu Utama)
+                      </Text>
+                      <Text fontSize="11px" color={textMuted}>
+                        Wajib diketahui untuk menilai keamanan pangan
+                      </Text>
+                    </Flex>
+
+                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={5}>
+                      {/* Input Durasi Waktu */}
+                      <Box>
+                        <Text fontSize="xs" fontWeight="semibold" mb={2}>
+                          Durasi sejak dimasak / dibeli / disimpan
+                        </Text>
+
+                        <HStack spacing={2} mb={2.5}>
+                          <Box
+                            as="button"
+                            type="button"
+                            onClick={() => setDurationKnown('known')}
+                            px={3}
+                            py={1.5}
+                            borderRadius="md"
+                            fontSize="xs"
+                            fontWeight={durationKnown === 'known' ? 'bold' : 'medium'}
+                            bg={durationKnown === 'known' ? primaryBtnBg : surfaceCream}
+                            color={durationKnown === 'known' ? primaryBtnText : textMain}
+                            border="1px solid"
+                            borderColor={durationKnown === 'known' ? primaryBtnBg : borderSubtle}
+                            cursor="pointer"
+                          >
+                            Waktu Diketahui
+                          </Box>
+                          <Box
+                            as="button"
+                            type="button"
+                            onClick={() => {
+                              setDurationKnown('unknown')
+                              setDurationHours('')
+                              if (formErrors.durationHours) {
+                                setFormErrors((prev) => ({ ...prev, durationHours: '' }))
+                              }
+                            }}
+                            px={3}
+                            py={1.5}
+                            borderRadius="md"
+                            fontSize="xs"
+                            fontWeight={durationKnown === 'unknown' ? 'bold' : 'medium'}
+                            bg={durationKnown === 'unknown' ? primaryBtnBg : surfaceCream}
+                            color={durationKnown === 'unknown' ? primaryBtnText : textMain}
+                            border="1px solid"
+                            borderColor={durationKnown === 'unknown' ? primaryBtnBg : borderSubtle}
+                            cursor="pointer"
+                          >
+                            Tidak Diketahui / Ragu
+                          </Box>
+                        </HStack>
+
+                        {durationKnown === 'known' ? (
+                          <Box>
+                            <HStack spacing={2} align="center" flexWrap="wrap">
+                              <Box
+                                as="input"
+                                type="number"
+                                step="0.5"
+                                min="0"
+                                max="720"
+                                value={durationHours}
+                                onChange={(e) => {
+                                  setDurationHours(e.target.value)
+                                  if (formErrors.durationHours) {
+                                    setFormErrors((prev) => ({ ...prev, durationHours: '' }))
+                                  }
+                                }}
+                                placeholder="Mis. 3"
+                                w="110px"
+                                px={3}
+                                py={1.5}
+                                fontSize="sm"
+                                bg={inputBg}
+                                color={textMain}
+                                borderRadius="lg"
+                                border="1px solid"
+                                borderColor={formErrors.durationHours ? redStatus : borderSubtle}
+                              />
+                              <Text fontSize="xs" fontWeight="semibold" color={textMuted}>
+                                jam
+                              </Text>
+
+                              <HStack spacing={1}>
+                                {['1', '2', '4', '6', '12', '24'].map((hr) => (
+                                  <Box
+                                    as="button"
+                                    type="button"
+                                    key={hr}
+                                    onClick={() => {
+                                      setDurationHours(hr)
+                                      if (formErrors.durationHours) {
+                                        setFormErrors((prev) => ({ ...prev, durationHours: '' }))
+                                      }
+                                    }}
+                                    px={2}
+                                    py={1}
+                                    borderRadius="md"
+                                    fontSize="11px"
+                                    fontWeight="semibold"
+                                    bg={durationHours === hr ? surfaceInteractive : surfaceCream}
+                                    border="1px solid"
+                                    borderColor={durationHours === hr ? primaryGreen : borderSubtle}
+                                    color={textMain}
+                                    cursor="pointer"
+                                  >
+                                    {hr}j
+                                  </Box>
+                                ))}
+                              </HStack>
+                            </HStack>
+                            {formErrors.durationHours && (
+                              <Text fontSize="xs" color={redStatus} fontWeight="semibold" mt={1}>
+                                {formErrors.durationHours}
+                              </Text>
+                            )}
+                          </Box>
+                        ) : (
+                          <Text fontSize="xs" color={textMuted} lineHeight="1.5">
+                            Bila waktu tidak diketahui, CuPI akan memberikan status{' '}
+                            <Box as="span" fontWeight="semibold" color={textMain}>
+                              Perlu informasi tambahan
+                            </Box>{' '}
+                            dan tidak mengasumsikan makanan aman.
+                          </Text>
+                        )}
+                      </Box>
+
+                      {/* Pilihan Tempat & Suhu Penyimpanan */}
+                      <Box>
+                        <Text fontSize="xs" fontWeight="semibold" mb={2}>
+                          Kondisi Penyimpanan
+                        </Text>
+                        <VStack spacing={1.5} align="stretch">
+                          {STORAGE_OPTIONS.map((opt) => {
+                            const selected = storageId === opt.id
+                            return (
+                              <Flex
+                                as="button"
+                                type="button"
+                                key={opt.id}
+                                onClick={() => setStorageId(opt.id)}
+                                align="center"
+                                justify="space-between"
+                                px={3}
+                                py={2}
+                                textAlign="left"
+                                borderRadius="lg"
+                                bg={selected ? surfaceInteractive : surfaceCream}
+                                border="1px solid"
+                                borderColor={selected ? primaryGreen : borderSubtle}
+                                cursor="pointer"
+                                _hover={{ borderColor: borderStrong }}
+                              >
+                                <Box pr={2}>
+                                  <Text fontSize="xs" fontWeight="bold" color={textMain}>
+                                    {opt.label}
+                                  </Text>
+                                  <Text fontSize="11px" color={textMuted}>
+                                    {opt.desc}
+                                  </Text>
+                                </Box>
+                                <Box
+                                  w="12px"
+                                  h="12px"
+                                  borderRadius="full"
+                                  border="2px solid"
+                                  borderColor={selected ? primaryGreen : borderStrong}
+                                  bg={selected ? primaryGreen : 'transparent'}
+                                  flexShrink={0}
+                                />
+                              </Flex>
+                            )
+                          })}
+                        </VStack>
+                      </Box>
+                    </SimpleGrid>
+                  </Box>
+
+                  {/* Garis Pemisah Seksi */}
+                  <Box borderTop="1px solid" borderColor={borderSubtle} />
+
+                  {/* SEKSI 3: Observasi Indera & Foto Konteks Visual */}
+                  <SimpleGrid columns={{ base: 1, md: 12 }} spacing={5}>
+                    {/* Observasi Indera (7 Kolom) */}
+                    <Box gridColumn={{ base: 'span 1', md: 'span 7' }}>
+                      <Text fontSize="xs" fontWeight="bold" color={primaryGreen} mb={1}>
+                        3. Observasi Indera (Bau, Tekstur, Warna)
+                      </Text>
+                      <Text fontSize="11px" color={textMuted} mb={2.5}>
+                        Centang bila ada perubahan fisik. Biarkan kosong bila tidak ditemukan tanda di bawah.
+                      </Text>
+
+                      <VStack spacing={1.5} align="stretch">
+                        {SENSORY_CHECKS.map((chk) => {
+                          const checked = sensoryFlags.includes(chk.id)
+                          return (
+                            <Flex
+                              as="button"
+                              type="button"
+                              key={chk.id}
+                              onClick={() => handleToggleSensoryFlag(chk.id)}
+                              align="center"
+                              justify="space-between"
+                              px={3}
+                              py={2}
+                              textAlign="left"
+                              borderRadius="lg"
+                              bg={checked ? redBg : surfaceCream}
+                              border="1px solid"
+                              borderColor={checked ? redStatus : borderSubtle}
+                              cursor="pointer"
+                            >
+                              <Box pr={2}>
+                                <Text
+                                  fontSize="xs"
+                                  fontWeight="bold"
+                                  color={checked ? redText : textMain}
+                                >
+                                  {chk.label}
+                                </Text>
+                                <Text fontSize="11px" color={textMuted}>
+                                  {chk.detail}
+                                </Text>
+                              </Box>
+                              <Flex
+                                w="16px"
+                                h="16px"
+                                align="center"
+                                justify="center"
+                                borderRadius="sm"
+                                border="1.5px solid"
+                                borderColor={checked ? redStatus : borderStrong}
+                                bg={checked ? redStatus : 'transparent'}
+                                color="#FFFFFF"
+                                flexShrink={0}
+                              >
+                                {checked && (
+                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="20 6 9 17 4 12" />
+                                  </svg>
+                                )}
+                              </Flex>
+                            </Flex>
+                          )
+                        })}
+
+                        <Flex
+                          as="button"
+                          type="button"
+                          onClick={handleToggleSensoryUnknown}
+                          align="center"
+                          justify="space-between"
+                          px={3}
+                          py={2}
+                          textAlign="left"
+                          borderRadius="lg"
+                          bg={sensoryUnknown ? amberBg : surfaceCream}
+                          border="1px solid"
+                          borderColor={sensoryUnknown ? amberStatus : borderSubtle}
+                          cursor="pointer"
+                        >
+                          <Text
+                            fontSize="xs"
+                            fontWeight="semibold"
+                            color={sensoryUnknown ? amberText : textMain}
+                          >
+                            Belum memeriksa aroma/tekstur secara langsung
+                          </Text>
+                          <Box
+                            w="14px"
+                            h="14px"
+                            borderRadius="sm"
+                            border="1.5px solid"
+                            borderColor={sensoryUnknown ? amberStatus : borderStrong}
+                            bg={sensoryUnknown ? amberStatus : 'transparent'}
+                            flexShrink={0}
+                          />
+                        </Flex>
+                      </VStack>
+                    </Box>
+
+                    {/* Unggah Foto Konteks Visual & Catatan (5 Kolom) */}
+                    <Box gridColumn={{ base: 'span 1', md: 'span 5' }}>
+                      <Text fontSize="xs" fontWeight="bold" color={primaryGreen} mb={1}>
+                        4. Foto Konteks Visual & Catatan (Opsional)
+                      </Text>
+                      <Text fontSize="11px" color={textMuted} mb={2.5}>
+                        Sebagai dokumentasi riwayat, bukan penentu tunggal keamanan.
+                      </Text>
+
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handleFileInputChange}
+                        style={{ display: 'none' }}
                       />
-                    )
-                  })}
-                </SimpleGrid>
-              </Box>
+
+                      {!imagePreview ? (
+                        <Flex
+                          direction="column"
+                          align="center"
+                          justify="center"
+                          p={3.5}
+                          textAlign="center"
+                          borderRadius="lg"
+                          bg={isDraggingFile ? surfaceInteractive : surfaceCream}
+                          border="1.5px dashed"
+                          borderColor={
+                            uploadError
+                              ? redStatus
+                              : isDraggingFile
+                              ? primaryGreen
+                              : borderStrong
+                          }
+                          cursor="pointer"
+                          onClick={() =>
+                            fileInputRef.current && fileInputRef.current.click()
+                          }
+                          onDragOver={(e) => {
+                            e.preventDefault()
+                            setIsDraggingFile(true)
+                          }}
+                          onDragLeave={() => setIsDraggingFile(false)}
+                          onDrop={(e) => {
+                            e.preventDefault()
+                            setIsDraggingFile(false)
+                            const file =
+                              e.dataTransfer.files && e.dataTransfer.files[0]
+                            if (file) handleFileProcess(file)
+                          }}
+                          _hover={{ borderColor: primaryGreen, bg: surfaceInteractive }}
+                        >
+                          <Box color={primaryGreen} mb={1}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                              <circle cx="8.5" cy="8.5" r="1.5" />
+                              <polyline points="21 15 16 10 5 21" />
+                            </svg>
+                          </Box>
+                          <Text fontSize="xs" fontWeight="bold" color={textMain}>
+                            Pilih foto makanan (opsional)
+                          </Text>
+                          <Text fontSize="11px" color={textMuted}>
+                            JPG, PNG, WEBP • Maks. 4 MB
+                          </Text>
+                        </Flex>
+                      ) : (
+                        <Flex
+                          align="center"
+                          gap={3}
+                          p={2.5}
+                          borderRadius="lg"
+                          bg={surfaceCream}
+                          border="1px solid"
+                          borderColor={borderStrong}
+                        >
+                          <Box
+                            as="img"
+                            src={imagePreview}
+                            alt="Preview makanan"
+                            w="54px"
+                            h="54px"
+                            objectFit="cover"
+                            borderRadius="md"
+                            flexShrink={0}
+                          />
+                          <Box flex="1" minW={0}>
+                            <Text fontSize="xs" fontWeight="bold" color={textMain} isTruncated>
+                              {imageFileName || 'Foto Terlampir'}
+                            </Text>
+                            <HStack spacing={2.5} mt={1}>
+                              <Box
+                                as="button"
+                                type="button"
+                                onClick={() =>
+                                  fileInputRef.current && fileInputRef.current.click()
+                                }
+                                fontSize="11px"
+                                fontWeight="semibold"
+                                color={primaryGreen}
+                              >
+                                Ganti
+                              </Box>
+                              <Box
+                                as="button"
+                                type="button"
+                                onClick={handleRemoveImage}
+                                fontSize="11px"
+                                fontWeight="semibold"
+                                color={redStatus}
+                              >
+                                Hapus
+                              </Box>
+                            </HStack>
+                          </Box>
+                        </Flex>
+                      )}
+
+                      {uploadError && (
+                        <Text fontSize="xs" color={redStatus} fontWeight="semibold" mt={1}>
+                          {uploadError}
+                        </Text>
+                      )}
+
+                      <Box mt={3}>
+                        <Text
+                          as="label"
+                          htmlFor="notes-textarea"
+                          fontSize="xs"
+                          fontWeight="semibold"
+                          display="block"
+                          mb={1}
+                        >
+                          Catatan Tambahan
+                        </Text>
+                        <Box
+                          as="textarea"
+                          id="notes-textarea"
+                          rows={2}
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          placeholder="Mis. Sudah pernah dipanaskan 1 kali..."
+                          w="100%"
+                          px={3}
+                          py={2}
+                          fontSize="xs"
+                          bg={inputBg}
+                          color={textMain}
+                          borderRadius="lg"
+                          border="1px solid"
+                          borderColor={borderSubtle}
+                        />
+                      </Box>
+                    </Box>
+                  </SimpleGrid>
+                </VStack>
+              </Card>
+
+              {/* ============================================================ */}
+              {/* AREA HASIL PEMERIKSAAN (LEMBAR DIAGNOSTIK TERSTRUKTUR)       */}
+              {/* ============================================================ */}
+              {assessmentResult && (
+                <Box
+                  ref={resultSectionRef}
+                  animation="pageFadeUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) both"
+                >
+                  <Card
+                    surface="cream"
+                    status={assessmentResult.status}
+                    title={`Hasil Pemeriksaan: ${assessmentResult.foodName}`}
+                    subtitle={`${assessmentResult.categoryLabel} • Diperiksa ${assessmentResult.createdAt}`}
+                    badge={assessmentResult.status}
+                    footer={
+                      <Flex
+                        w="100%"
+                        align="center"
+                        justify="space-between"
+                        flexWrap="wrap"
+                        gap={3}
+                      >
+                        <Text fontSize="11px" color={textMuted}>
+                          Panduan CuPI berdasarkan waktu, suhu, dan observasi pengguna (bukan pengganti uji laboratorium).
+                        </Text>
+
+                        <HStack spacing={2}>
+                          {!isResultSaved ? (
+                            <Box
+                              as="button"
+                              type="button"
+                              onClick={handleSaveToHistoryManual}
+                              px={3.5}
+                              py={1.5}
+                              borderRadius="lg"
+                              bg={primaryBtnBg}
+                              color={primaryBtnText}
+                              fontSize="xs"
+                              fontWeight="bold"
+                              cursor="pointer"
+                            >
+                              Simpan ke History Track
+                            </Box>
+                          ) : (
+                            <Text fontSize="xs" fontWeight="bold" color={primaryGreen}>
+                              ✓ Tersimpan di History Track
+                            </Text>
+                          )}
+
+                          <Box
+                            as="button"
+                            type="button"
+                            onClick={() => setActiveNav('History Track')}
+                            px={3}
+                            py={1.5}
+                            borderRadius="lg"
+                            bg={surfaceSage}
+                            border="1px solid"
+                            borderColor={borderSubtle}
+                            fontSize="xs"
+                            fontWeight="bold"
+                            color={textMain}
+                            cursor="pointer"
+                            _hover={{ bg: surfaceInteractive }}
+                          >
+                            Lihat History Track →
+                          </Box>
+                        </HStack>
+                      </Flex>
+                    }
+                  >
+                    {/* Ringkasan Utama Status */}
+                    <Flex
+                      align="flex-start"
+                      gap={3.5}
+                      p={3.5}
+                      borderRadius="xl"
+                      bg={getStatusTokens(assessmentResult.status).bg}
+                      mb={4}
+                    >
+                      {assessmentResult.imagePreview && (
+                        <Box
+                          as="img"
+                          src={assessmentResult.imagePreview}
+                          alt={assessmentResult.foodName}
+                          w="64px"
+                          h="64px"
+                          objectFit="cover"
+                          borderRadius="lg"
+                          flexShrink={0}
+                        />
+                      )}
+                      <Box>
+                        <Text
+                          fontSize="sm"
+                          fontWeight="bold"
+                          color={getStatusTokens(assessmentResult.status).text}
+                          lineHeight="1.5"
+                        >
+                          {assessmentResult.summary}
+                        </Text>
+                        <Text fontSize="xs" color={textMuted} mt={1} lineHeight="1.55">
+                          {assessmentResult.reasoning}
+                        </Text>
+                      </Box>
+                    </Flex>
+
+                    {/* Rincian Baris Diagnostik (Tanpa Grid Kartu Seragam) */}
+                    <VStack
+                      spacing={3}
+                      align="stretch"
+                      divider={<Box borderTop="1px solid" borderColor={borderSubtle} />}
+                    >
+                      <Flex
+                        direction={{ base: 'column', sm: 'row' }}
+                        justify="space-between"
+                        gap={1}
+                      >
+                        <Text fontSize="xs" fontWeight="bold" color={primaryGreen} minW="210px">
+                          Faktor Waktu & Penyimpanan
+                        </Text>
+                        <Text fontSize="xs" color={textMain} flex="1" lineHeight="1.55">
+                          {assessmentResult.timeStorageFactor}
+                        </Text>
+                      </Flex>
+
+                      <Flex
+                        direction={{ base: 'column', sm: 'row' }}
+                        justify="space-between"
+                        gap={1}
+                      >
+                        <Text fontSize="xs" fontWeight="bold" color={primaryGreen} minW="210px">
+                          Temuan Visual & Indera
+                        </Text>
+                        <Text fontSize="xs" color={textMain} flex="1" lineHeight="1.55">
+                          {assessmentResult.sensoryFactor}
+                        </Text>
+                      </Flex>
+
+                      <Flex
+                        direction={{ base: 'column', sm: 'row' }}
+                        justify="space-between"
+                        gap={1}
+                      >
+                        <Text fontSize="xs" fontWeight="bold" color={primaryGreen} minW="210px">
+                          Rekomendasi Tindakan
+                        </Text>
+                        <Text
+                          fontSize="xs"
+                          fontWeight="semibold"
+                          color={textMain}
+                          flex="1"
+                          lineHeight="1.55"
+                        >
+                          {assessmentResult.recommendation}
+                        </Text>
+                      </Flex>
+
+                      {profile.showWasteGuidance && assessmentResult.wasteGuidance && (
+                        <Flex
+                          direction={{ base: 'column', sm: 'row' }}
+                          justify="space-between"
+                          gap={1}
+                        >
+                          <Text fontSize="xs" fontWeight="bold" color={primaryGreen} minW="210px">
+                            Pencegahan Food Waste
+                          </Text>
+                          <Text fontSize="xs" color={textMuted} flex="1" lineHeight="1.55">
+                            {assessmentResult.wasteGuidance}
+                          </Text>
+                        </Flex>
+                      )}
+                    </VStack>
+                  </Card>
+                </Box>
+              )}
             </VStack>
           )}
 
           {/* ============================================================== */}
-          {/* 3. HALAMAN FITUR, ANALITIK, DAN TENTANG                        */}
+          {/* 2. HALAMAN HISTORY TRACK (CATATAN RIWAYAT YANG DAPAT DITELUSURI) */}
           {/* ============================================================== */}
-          {(activePage === 'Fitur' ||
-            activePage === 'Analitik' ||
-            activePage === 'Tentang') && (
-            <VStack spacing={6} w="100%" maxW="940px" mx="auto" align="stretch">
+          {activeNav === 'History Track' && (
+            <VStack spacing={5} align="stretch" w="100%">
               <Flex
                 direction={{ base: 'column', sm: 'row' }}
-                align={{ base: 'flex-start', sm: 'center' }}
+                align={{ base: 'flex-start', sm: 'flex-end' }}
                 justify="space-between"
                 gap={3}
-                p={6}
-                bg={surfaceBg}
-                borderRadius="2xl"
-                border="1px solid"
-                borderColor={borderSubtle}
+                px={1}
               >
                 <Box>
-                  <Text fontSize="xs" fontWeight="bold" color={accentColor} textTransform="uppercase">
-                    Halaman Aktif: {activePage}
+                  <Text
+                    fontSize="xs"
+                    fontWeight="bold"
+                    textTransform="uppercase"
+                    letterSpacing="0.05em"
+                    color={primaryGreen}
+                  >
+                    History Track • Penyimpanan Browser Lokal
                   </Text>
                   <Text
                     fontFamily="'Figtree', sans-serif"
-                    fontSize={{ base: '2xl', md: '3xl' }}
+                    fontSize={{ base: '2xl', sm: '3xl' }}
                     fontWeight="extrabold"
                     color={textMain}
+                    lineHeight="1.2"
+                    mt={1}
                   >
-                    {activePage === 'Fitur' && 'Modul & Kemampuan Siklus Residu'}
-                    {activePage === 'Analitik' && 'Analitik & Ringkasan Laporan Residu'}
-                    {activePage === 'Tentang' && 'Tentang Tim & Informasi Karya'}
+                    Catatan Riwayat Pemeriksaan Makanan
                   </Text>
                 </Box>
 
                 <Box
                   as="button"
                   type="button"
-                  onClick={() => handleSelectDestination('Dashboard')}
+                  onClick={() => setActiveNav('CuPI')}
                   px={4}
                   py={2}
                   borderRadius="lg"
-                  bg={btnBg}
-                  color={btnColor}
+                  bg={primaryBtnBg}
+                  color={primaryBtnText}
                   fontSize="xs"
                   fontWeight="bold"
                   cursor="pointer"
-                  _hover={{ bg: btnHoverBg }}
+                  _hover={{ bg: primaryBtnHover }}
                 >
-                  Buka Dashboard Siklus Residu
+                  + Pemeriksaan Baru
                 </Box>
               </Flex>
 
-              {activePage === 'Fitur' && (
-                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-                  <Card
-                    title="1. Pencatatan Sumber & Pengumpulan"
-                    description="Mencatat volume residu masuk berdasarkan sumber, waktu, dan kategori material secara terstruktur di tingkat lokal."
-                    badge="Tahap 01–02"
+              {/* Bar Pencarian & Filter Status */}
+              <Card surface="sage" compact>
+                <Flex
+                  direction={{ base: 'column', md: 'row' }}
+                  align={{ base: 'stretch', md: 'center' }}
+                  justify="space-between"
+                  gap={3}
+                >
+                  <Box
+                    as="input"
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Cari nama makanan atau kategori..."
+                    w={{ base: '100%', md: '280px' }}
+                    px={3}
+                    py={1.5}
+                    fontSize="xs"
+                    bg={inputBg}
+                    color={textMain}
+                    borderRadius="lg"
+                    border="1px solid"
+                    borderColor={borderSubtle}
                   />
-                  <Card
-                    title="2. Pemilahan Berbasis Karakteristik"
-                    description="Memisahkan residu organik basah, ampas organik, minyak residu, serta serat kemasan agar siap disalurkan ke proses yang tepat."
-                    badge="Tahap 03"
-                  />
-                  <Card
-                    title="3. Pemantauan Pengolahan & Pemanfaatan"
-                    description="Melacak porsi residu yang berhasil dimanfaatkan kembali dibandingkan dengan residu akhir yang tersisa."
-                    badge="Tahap 04–05"
-                  />
-                  <Card
-                    title="4. Simulasi Input Data Interaktif"
-                    description="Mendukung penambahan catatan residu secara langsung pada mode demo lokal untuk menguji perubahan KPI dan grafik."
-                    badge="Interaktif"
-                    onClick={() => handleSelectDestination('Dashboard')}
-                  />
-                </SimpleGrid>
-              )}
 
-              {activePage === 'Analitik' && (
-                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
-                  <Card
-                    variant="kpi"
-                    title="Rasio Pemanfaatan (Simulasi)"
-                    metricValue={Math.round(
-                      (kpiMetrics.dimanfaatkan / Math.max(kpiMetrics.totalMasuk, 1)) * 100
-                    )}
-                    metricUnit="%"
-                    metricSubtext={`${kpiMetrics.dimanfaatkan} kg dimanfaatkan dari ${kpiMetrics.totalMasuk} kg total`}
-                    isActive={true}
-                  />
-                  <Card
-                    variant="kpi"
-                    title="Dalam Proses Pemilahan/Kumpul"
-                    metricValue={kpiMetrics.sedangDiproses}
-                    metricUnit="kg"
-                    metricSubtext="Menunggu penyaluran tahap berikutnya"
-                  />
-                  <Card
-                    variant="kpi"
-                    title="Porsi Residu Akhir"
-                    metricValue={Math.round(
-                      (kpiMetrics.residuAkhir / Math.max(kpiMetrics.totalMasuk, 1)) * 100
-                    )}
-                    metricUnit="%"
-                    metricSubtext={`${kpiMetrics.residuAkhir} kg memerlukan penanganan akhir`}
-                  />
-                </SimpleGrid>
-              )}
+                  <HStack spacing={1.5} flexWrap="wrap">
+                    {[
+                      'Semua',
+                      'Perlu perhatian',
+                      'Risiko terindikasi',
+                      'Perlu informasi tambahan',
+                      'Tidak dapat dinilai',
+                    ].map((st) => {
+                      const active = statusFilter === st
+                      return (
+                        <Box
+                          as="button"
+                          type="button"
+                          key={st}
+                          onClick={() => setStatusFilter(st)}
+                          px={2.5}
+                          py={1}
+                          borderRadius="md"
+                          fontSize="11px"
+                          fontWeight={active ? 'bold' : 'medium'}
+                          bg={active ? primaryBtnBg : surfaceCream}
+                          color={active ? primaryBtnText : textMuted}
+                          border="1px solid"
+                          borderColor={active ? primaryBtnBg : borderSubtle}
+                          cursor="pointer"
+                        >
+                          {st}
+                        </Box>
+                      )
+                    })}
+                  </HStack>
+                </Flex>
+              </Card>
 
-              {activePage === 'Tentang' && (
+              {/* Daftar Log Riwayat Vertikal */}
+              {filteredHistory.length === 0 ? (
                 <Card
-                  variant="panel"
-                  title="PROYEK.ID — Sistem Pemantauan Siklus Residu"
-                  description="Antarmuka web berbasis React dan Chakra UI yang dirancang untuk memvisualisasikan alur pencatatan, pemilahan, dan pemanfaatan residu secara bersih, responsif, dan mudah dipahami."
-                  footer={
-                    <Text fontSize="xs" color={textMuted}>
-                      Disusun oleh{' '}
-                      <Box as="span" fontWeight="bold" color={textMain}>
-                        Krisna, Nico, dan Yehez
-                      </Box>{' '}
-                      • Mode Demo & Simulasi Frontend
-                    </Text>
+                  surface="cream"
+                  title="Belum Ada Catatan Pemeriksaan"
+                  description={
+                    historyList.length === 0
+                      ? 'Riwayat pemeriksaan lokal Anda masih kosong. Lakukan pemeriksaan makanan pertama di halaman CuPI.'
+                      : 'Tidak ada catatan riwayat yang cocok dengan kata kunci atau filter status yang dipilih.'
                   }
-                />
-              )}
+                >
+                  <HStack spacing={2.5} mt={2}>
+                    {historyList.length > 0 && (
+                      <Box
+                        as="button"
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery('')
+                          setStatusFilter('Semua')
+                        }}
+                        px={3}
+                        py={1.5}
+                        borderRadius="md"
+                        bg={surfaceSage}
+                        border="1px solid"
+                        borderColor={borderSubtle}
+                        fontSize="xs"
+                        fontWeight="bold"
+                      >
+                        Reset Filter
+                      </Box>
+                    )}
+                    <Box
+                      as="button"
+                      type="button"
+                      onClick={() => setActiveNav('CuPI')}
+                      px={3.5}
+                      py={1.5}
+                      borderRadius="md"
+                      bg={primaryBtnBg}
+                      color={primaryBtnText}
+                      fontSize="xs"
+                      fontWeight="bold"
+                    >
+                      Ke Halaman Pemeriksaan
+                    </Box>
+                  </HStack>
+                </Card>
+              ) : (
+                <VStack spacing={3} align="stretch">
+                  {filteredHistory.map((item) => {
+                    const isExpanded = expandedHistoryId === item.id
+                    return (
+                      <Card
+                        key={item.id}
+                        surface={isExpanded ? 'cream' : 'sage'}
+                        status={item.status}
+                        isActive={isExpanded}
+                        compact
+                        onClick={() =>
+                          setExpandedHistoryId((prev) =>
+                            prev === item.id ? null : item.id
+                          )
+                        }
+                        title={item.foodName}
+                        subtitle={`${item.createdAt} • ${item.storageLabel}${
+                          item.durationHours ? ` (${item.durationHours} jam)` : ''
+                        }`}
+                        badge={item.status}
+                        headerAction={
+                          item.isDemo ? (
+                            <Box
+                              px={2}
+                              py={0.5}
+                              borderRadius="sm"
+                              bg={surfaceInteractive}
+                              fontSize="10px"
+                              fontWeight="bold"
+                              color={textMuted}
+                            >
+                              Contoh data (Mode demo)
+                            </Box>
+                          ) : null
+                        }
+                      >
+                        <Flex align="flex-start" gap={3}>
+                          {item.imagePreview && (
+                            <Box
+                              as="img"
+                              src={item.imagePreview}
+                              alt={item.foodName}
+                              w="48px"
+                              h="48px"
+                              objectFit="cover"
+                              borderRadius="md"
+                              flexShrink={0}
+                            />
+                          )}
+                          <Text fontSize="xs" color={textMain} lineHeight="1.55" flex="1">
+                            {item.summary}
+                          </Text>
+                        </Flex>
 
-              {/* Navigasi Cepat Antarmodul */}
-              <SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} spacing={4}>
-                {NAV_DESTINATIONS.map((dest) => (
-                  <Card
-                    key={dest.id}
-                    title={dest.label}
-                    description={dest.desc}
-                    icon={dest.icon}
-                    isActive={activePage === dest.id}
-                    badge={activePage === dest.id ? 'Aktif' : null}
-                    compact
-                    onClick={() => handleSelectDestination(dest.id)}
-                  />
-                ))}
-              </SimpleGrid>
+                        {/* Rincian Terbuka Saat Item Diklik */}
+                        {isExpanded && (
+                          <Box
+                            mt={3.5}
+                            pt={3}
+                            borderTop="1px solid"
+                            borderColor={borderSubtle}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <VStack spacing={2} align="stretch" fontSize="xs">
+                              <Text color={textMain}>
+                                <Box as="span" fontWeight="bold" color={primaryGreen}>
+                                  Waktu & Suhu:{' '}
+                                </Box>
+                                {item.timeStorageFactor}
+                              </Text>
+                              <Text color={textMain}>
+                                <Box as="span" fontWeight="bold" color={primaryGreen}>
+                                  Observasi Indera:{' '}
+                                </Box>
+                                {item.sensoryFactor}
+                              </Text>
+                              <Text color={textMain}>
+                                <Box as="span" fontWeight="bold" color={primaryGreen}>
+                                  Rekomendasi:{' '}
+                                </Box>
+                                {item.recommendation}
+                              </Text>
+                              {item.notes && (
+                                <Text color={textMuted}>
+                                  <Box as="span" fontWeight="bold">
+                                    Catatan:{' '}
+                                  </Box>
+                                  {item.notes}
+                                </Text>
+                              )}
+                            </VStack>
+
+                            <Flex justify="space-between" align="center" mt={3} pt={2}>
+                              <Box
+                                as="button"
+                                type="button"
+                                onClick={() => handleDeleteHistoryItem(item.id)}
+                                fontSize="11px"
+                                fontWeight="bold"
+                                color={redStatus}
+                                cursor="pointer"
+                              >
+                                Hapus Catatan Ini
+                              </Box>
+                              <Box
+                                as="button"
+                                type="button"
+                                onClick={() => setExpandedHistoryId(null)}
+                                fontSize="11px"
+                                fontWeight="bold"
+                                color={primaryGreen}
+                                cursor="pointer"
+                              >
+                                Tutup Rincian
+                              </Box>
+                            </Flex>
+                          </Box>
+                        )}
+                      </Card>
+                    )
+                  })}
+                </VStack>
+              )}
+            </VStack>
+          )}
+
+          {/* ============================================================== */}
+          {/* 3. HALAMAN PROFILE (SEDERHANA, FUNGSIONAL, TANPA DASHBOARD MINI) */}
+          {/* ============================================================== */}
+          {activeNav === 'Profile' && (
+            <VStack spacing={5} align="stretch" w="100%" maxW="720px" mx="auto">
+              <Box px={1}>
+                <Text
+                  fontSize="xs"
+                  fontWeight="bold"
+                  textTransform="uppercase"
+                  letterSpacing="0.05em"
+                  color={primaryGreen}
+                >
+                  Profile • Pengaturan Pengguna Lokal
+                </Text>
+                <Text
+                  fontFamily="'Figtree', sans-serif"
+                  fontSize={{ base: '2xl', sm: '3xl' }}
+                  fontWeight="extrabold"
+                  color={textMain}
+                  mt={1}
+                >
+                  Profil & Preferensi CuPI
+                </Text>
+              </Box>
+
+              {/* Kartu Identitas Pengguna Lokal */}
+              <Card
+                surface="sage"
+                title={profile.displayName}
+                subtitle={`${profile.contextRole} • Mode Penyimpanan Perangkat Lokal`}
+                headerAction={
+                  <Box
+                    as="button"
+                    type="button"
+                    onClick={() => {
+                      setProfileDraft(profile)
+                      setIsEditingProfile((prev) => !prev)
+                    }}
+                    px={3}
+                    py={1.5}
+                    borderRadius="lg"
+                    bg={isEditingProfile ? surfaceInteractive : primaryBtnBg}
+                    color={isEditingProfile ? textMain : primaryBtnText}
+                    fontSize="xs"
+                    fontWeight="bold"
+                    cursor="pointer"
+                  >
+                    {isEditingProfile ? 'Batal' : 'Ubah Profil'}
+                  </Box>
+                }
+              >
+                {profileFeedback && (
+                  <Box
+                    mb={3}
+                    px={3}
+                    py={2}
+                    borderRadius="lg"
+                    bg={surfaceInteractive}
+                    fontSize="xs"
+                    fontWeight="bold"
+                    color={primaryGreen}
+                  >
+                    {profileFeedback}
+                  </Box>
+                )}
+
+                <HStack spacing={3.5}>
+                  <Flex
+                    w="48px"
+                    h="48px"
+                    borderRadius="xl"
+                    bg={primaryBtnBg}
+                    color={primaryBtnText}
+                    align="center"
+                    justify="center"
+                    fontFamily="'Figtree', sans-serif"
+                    fontSize="lg"
+                    fontWeight="extrabold"
+                    flexShrink={0}
+                  >
+                    {userInitials}
+                  </Flex>
+                  <Box fontSize="xs" color={textMuted}>
+                    <Text color={textMain} fontWeight="semibold">
+                      Catatan Kontak / Label Lokal:{' '}
+                      {profile.contactNote ? profile.contactNote : 'Belum diisi (opsional)'}
+                    </Text>
+                    <Text mt={0.5}>
+                      Tidak memerlukan login akun. Data hanya disimpan pada browser perangkat ini.
+                    </Text>
+                  </Box>
+                </HStack>
+
+                {isEditingProfile && (
+                  <Box
+                    as="form"
+                    onSubmit={handleSaveProfile}
+                    mt={4}
+                    pt={4}
+                    borderTop="1px solid"
+                    borderColor={borderSubtle}
+                  >
+                    <SimpleGrid columns={{ base: 1, sm: 3 }} spacing={3} mb={3}>
+                      <Box>
+                        <Text fontSize="xs" fontWeight="semibold" mb={1}>
+                          Nama Tampilan
+                        </Text>
+                        <Box
+                          as="input"
+                          type="text"
+                          value={profileDraft.displayName}
+                          onChange={(e) =>
+                            setProfileDraft((prev) => ({
+                              ...prev,
+                              displayName: e.target.value,
+                            }))
+                          }
+                          w="100%"
+                          px={3}
+                          py={1.5}
+                          fontSize="xs"
+                          bg={inputBg}
+                          borderRadius="md"
+                          border="1px solid"
+                          borderColor={borderSubtle}
+                        />
+                      </Box>
+
+                      <Box>
+                        <Text fontSize="xs" fontWeight="semibold" mb={1}>
+                          Konteks Penggunaan
+                        </Text>
+                        <Box
+                          as="input"
+                          type="text"
+                          value={profileDraft.contextRole}
+                          onChange={(e) =>
+                            setProfileDraft((prev) => ({
+                              ...prev,
+                              contextRole: e.target.value,
+                            }))
+                          }
+                          w="100%"
+                          px={3}
+                          py={1.5}
+                          fontSize="xs"
+                          bg={inputBg}
+                          borderRadius="md"
+                          border="1px solid"
+                          borderColor={borderSubtle}
+                        />
+                      </Box>
+
+                      <Box>
+                        <Text fontSize="xs" fontWeight="semibold" mb={1}>
+                          Email / Catatan Lokal
+                        </Text>
+                        <Box
+                          as="input"
+                          type="text"
+                          value={profileDraft.contactNote}
+                          onChange={(e) =>
+                            setProfileDraft((prev) => ({
+                              ...prev,
+                              contactNote: e.target.value,
+                            }))
+                          }
+                          placeholder="Opsional"
+                          w="100%"
+                          px={3}
+                          py={1.5}
+                          fontSize="xs"
+                          bg={inputBg}
+                          borderRadius="md"
+                          border="1px solid"
+                          borderColor={borderSubtle}
+                        />
+                      </Box>
+                    </SimpleGrid>
+
+                    <Flex justify="flex-end">
+                      <Box
+                        as="button"
+                        type="submit"
+                        px={4}
+                        py={1.5}
+                        borderRadius="md"
+                        bg={primaryBtnBg}
+                        color={primaryBtnText}
+                        fontSize="xs"
+                        fontWeight="bold"
+                        cursor="pointer"
+                      >
+                        Simpan Profil
+                      </Box>
+                    </Flex>
+                  </Box>
+                )}
+              </Card>
+
+              {/* Daftar Preferensi Fungsional dengan Divider Bersih */}
+              <Card
+                surface="sage"
+                title="Preferensi Pemeriksaan & Tampilan"
+                subtitle="Mengatur perilaku evaluasi kondisi makanan dan penyimpanan riwayat."
+                footer={
+                  <Flex align="center" justify="space-between" flexWrap="wrap" gap={2}>
+                    <Text fontSize="xs" color={textMuted}>
+                      Riwayat tersimpan di browser: {historyList.length} item
+                    </Text>
+
+                    {!confirmClearHistory ? (
+                      <Box
+                        as="button"
+                        type="button"
+                        onClick={() => setConfirmClearHistory(true)}
+                        fontSize="xs"
+                        fontWeight="bold"
+                        color={redStatus}
+                        cursor="pointer"
+                      >
+                        Kosongkan Riwayat Lokal
+                      </Box>
+                    ) : (
+                      <HStack spacing={2}>
+                        <Box
+                          as="button"
+                          type="button"
+                          onClick={() => {
+                            setHistoryList([])
+                            setExpandedHistoryId(null)
+                            setConfirmClearHistory(false)
+                          }}
+                          px={2.5}
+                          py={1}
+                          borderRadius="md"
+                          bg={redStatus}
+                          color="#FFFFFF"
+                          fontSize="xs"
+                          fontWeight="bold"
+                        >
+                          Ya, Hapus Semua
+                        </Box>
+                        <Box
+                          as="button"
+                          type="button"
+                          onClick={() => setConfirmClearHistory(false)}
+                          px={2.5}
+                          py={1}
+                          borderRadius="md"
+                          bg={surfaceCream}
+                          fontSize="xs"
+                          fontWeight="semibold"
+                        >
+                          Batal
+                        </Box>
+                      </HStack>
+                    )}
+                  </Flex>
+                }
+              >
+                <VStack
+                  spacing={3.5}
+                  align="stretch"
+                  divider={<Box borderTop="1px solid" borderColor={borderSubtle} />}
+                >
+                  <Flex align="center" justify="space-between" gap={3}>
+                    <Box>
+                      <Text fontSize="xs" fontWeight="bold" color={textMain}>
+                        Tema Tampilan (Light / Dark)
+                      </Text>
+                      <Text fontSize="11px" color={textMuted}>
+                        {colorMode === 'light'
+                          ? 'Mode Terang aktif (Fresh Botanical Leaf & Warm Cream)'
+                          : 'Mode Gelap aktif (Deep Forest Green)'}
+                      </Text>
+                    </Box>
+                    <Box
+                      as="button"
+                      type="button"
+                      onClick={toggleColorMode}
+                      px={3}
+                      py={1.5}
+                      borderRadius="md"
+                      bg={surfaceCream}
+                      border="1px solid"
+                      borderColor={borderStrong}
+                      fontSize="xs"
+                      fontWeight="bold"
+                      color={textMain}
+                      cursor="pointer"
+                    >
+                      Ubah ke {colorMode === 'light' ? 'Dark' : 'Light'}
+                    </Box>
+                  </Flex>
+
+                  <Flex align="center" justify="space-between" gap={3}>
+                    <Box>
+                      <Text fontSize="xs" fontWeight="bold" color={textMain}>
+                        Simpan Otomatis ke History Track
+                      </Text>
+                      <Text fontSize="11px" color={textMuted}>
+                        Simpan setiap hasil pemeriksaan baru ke riwayat perangkat secara langsung.
+                      </Text>
+                    </Box>
+                    <Box
+                      as="button"
+                      type="button"
+                      onClick={() => handlePreferenceToggle('autoSaveHistory')}
+                      px={3}
+                      py={1}
+                      borderRadius="md"
+                      fontSize="xs"
+                      fontWeight="bold"
+                      bg={profile.autoSaveHistory ? primaryBtnBg : surfaceCream}
+                      color={profile.autoSaveHistory ? primaryBtnText : textMuted}
+                      border="1px solid"
+                      borderColor={profile.autoSaveHistory ? primaryBtnBg : borderSubtle}
+                      cursor="pointer"
+                    >
+                      {profile.autoSaveHistory ? 'Aktif' : 'Nonaktif'}
+                    </Box>
+                  </Flex>
+
+                  <Flex align="center" justify="space-between" gap={3}>
+                    <Box>
+                      <Text fontSize="xs" fontWeight="bold" color={textMain}>
+                        Batas Peringatan Dini Suhu Ruang (2 Jam)
+                      </Text>
+                      <Text fontSize="11px" color={textMuted}>
+                        Tandai status Perlu perhatian saat makanan matang berada di suhu ruang selama 2 jam.
+                      </Text>
+                    </Box>
+                    <Box
+                      as="button"
+                      type="button"
+                      onClick={() => handlePreferenceToggle('strictRoomTempAlert')}
+                      px={3}
+                      py={1}
+                      borderRadius="md"
+                      fontSize="xs"
+                      fontWeight="bold"
+                      bg={profile.strictRoomTempAlert ? primaryBtnBg : surfaceCream}
+                      color={profile.strictRoomTempAlert ? primaryBtnText : textMuted}
+                      border="1px solid"
+                      borderColor={profile.strictRoomTempAlert ? primaryBtnBg : borderSubtle}
+                      cursor="pointer"
+                    >
+                      {profile.strictRoomTempAlert ? 'Ketat (2 Jam)' : 'Standar'}
+                    </Box>
+                  </Flex>
+
+                  <Flex align="center" justify="space-between" gap={3}>
+                    <Box>
+                      <Text fontSize="xs" fontWeight="bold" color={textMain}>
+                        Panduan Pencegahan Food Waste Bertanggung Jawab
+                      </Text>
+                      <Text fontSize="11px" color={textMuted}>
+                        Tampilkan saran pemanfaatan hanya saat waktu dan suhu makanan masih memenuhi syarat.
+                      </Text>
+                    </Box>
+                    <Box
+                      as="button"
+                      type="button"
+                      onClick={() => handlePreferenceToggle('showWasteGuidance')}
+                      px={3}
+                      py={1}
+                      borderRadius="md"
+                      fontSize="xs"
+                      fontWeight="bold"
+                      bg={profile.showWasteGuidance ? primaryBtnBg : surfaceCream}
+                      color={profile.showWasteGuidance ? primaryBtnText : textMuted}
+                      border="1px solid"
+                      borderColor={profile.showWasteGuidance ? primaryBtnBg : borderSubtle}
+                      cursor="pointer"
+                    >
+                      {profile.showWasteGuidance ? 'Aktif' : 'Nonaktif'}
+                    </Box>
+                  </Flex>
+                </VStack>
+              </Card>
             </VStack>
           )}
         </Box>
       </Flex>
 
-      {/* Footer Adaptif Mode Gelap & Terang */}
+      {/* ================================================================== */}
+      {/* FOOTER ADAPTIF                                                     */}
+      {/* ================================================================== */}
       <Box
         as="footer"
         w="100%"
-        pos="relative"
-        zIndex={1}
-        bg={surfaceBg}
+        bg={surfaceSage}
         borderTop="1px solid"
         borderColor={borderSubtle}
-        py={5}
+        py={4}
         px={6}
       >
         <Flex
-          maxW="1120px"
+          maxW="880px"
           mx="auto"
           direction={{ base: 'column', sm: 'row' }}
           align="center"
@@ -2059,23 +2663,17 @@ function App() {
           fontSize="xs"
           color={textMuted}
         >
-          <Text
-            fontFamily="'Figtree', sans-serif"
-            fontWeight="bold"
-            color={textMain}
-            letterSpacing="0.04em"
-          >
-            PROYEK.ID
-          </Text>
+          <HStack spacing={2}>
+            <Box w="6px" h="6px" borderRadius="full" bg={freshGreen} />
+            <Text fontFamily="'Figtree', sans-serif" fontWeight="bold" color={textMain}>
+              CuPI
+            </Text>
+            <Text>• Food Condition & Safety Assistant</Text>
+          </HStack>
 
-          <Text fontWeight="medium" textAlign="center">
-            Karya{' '}
-            <Box as="span" fontWeight="bold" color={textMain}>
-              Krisna, Nico, dan Yehez
-            </Box>
+          <Text textAlign="center">
+            Riwayat waktu & suhu penyimpanan adalah penentu utama keamanan pangan
           </Text>
-
-          <Text>© 2026 Hak Cipta Dilindungi</Text>
         </Flex>
       </Box>
     </Flex>

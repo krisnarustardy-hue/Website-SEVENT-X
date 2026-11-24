@@ -7,62 +7,83 @@ import {
 } from '@chakra-ui/react'
 
 function Card({
-  title = 'Belajar',
+  title = '',
+  subtitle = '',
   description = '',
   icon = null,
   badge = null,
+  headerAction = null,
   footer = null,
   children = null,
+  surface = 'sage',
+  status = '',
   isActive = false,
   compact = false,
-  variant = 'default',
-  metricValue = null,
-  metricUnit = '',
-  metricSubtext = '',
   onClick,
   ...rest
 }) {
-  // Palet Fresh Botanical (Light) & Deep Forest Green (Dark)
-  const featuredBg = useColorModeValue('#D8EAD4', '#1D3324')
-  const panelBg = useColorModeValue('#E5F1E2', '#17281D')
-  const compactBg = useColorModeValue('#E8F3E5', '#17281D')
-  const activeBg = useColorModeValue('#CFE4CA', '#223B2A')
+  // Palet Permukaan CuPI: Pale Sage & Warm Cream
+  const sageSurface = useColorModeValue('#F0F5ED', '#15251B')
+  const creamSurface = useColorModeValue('#F6F4E9', '#1A2D21')
+  const activeSurface = useColorModeValue('#E2EFE0', '#1E3426')
 
-  const resolvedBg =
-    variant === 'featured'
-      ? featuredBg
-      : isActive
-      ? activeBg
-      : compact
-      ? compactBg
-      : panelBg
+  const borderDefault = useColorModeValue('#C5D7C0', '#273F30')
+  const borderActive = useColorModeValue('#285B3D', '#78A96B')
 
-  const borderDefault = useColorModeValue('#B5D0B2', '#36533C')
-  const borderActive = useColorModeValue('#397A46', '#91C887')
-  const borderHover = useColorModeValue('#589464', '#79B470')
+  const textMain = useColorModeValue('#203329', '#EEF3EC')
+  const textMuted = useColorModeValue('#65766A', '#9BB0A1')
+  const primaryGreen = useColorModeValue('#285B3D', '#78A96B')
 
-  const textMain = useColorModeValue('#193B28', '#EAF3E7')
-  const textMuted = useColorModeValue('#4E6D54', '#A9BDA8')
-  const accentColor = useColorModeValue('#397A46', '#91C887')
+  // Token Warna Status Keamanan Pangan
+  const amberAccent = useColorModeValue('#D99A38', '#E5AC4C')
+  const amberBadgeBg = useColorModeValue('#F7EEDB', '#322614')
+  const amberBadgeText = useColorModeValue('#6B460B', '#F6D594')
 
-  const iconSurface = useColorModeValue('#C8E0C4', '#243B2A')
-  const iconActiveBg = useColorModeValue('#397A46', '#91C887')
-  const iconActiveColor = useColorModeValue('#F4FAF2', '#101D15')
+  const redAccent = useColorModeValue('#B9574F', '#DF7870')
+  const redBadgeBg = useColorModeValue('#F6E5E3', '#351A19')
+  const redBadgeText = useColorModeValue('#70231D', '#F6B6B1')
 
-  const badgeBg = useColorModeValue('#C5DFC1', '#2B4931')
-  const dividerColor = useColorModeValue('#BDCEB9', '#2E4935')
+  const infoAccent = useColorModeValue('#4A6B54', '#88AE93')
+  const infoBadgeBg = useColorModeValue('#E2ECE3', '#1E3326')
+  const infoBadgeText = useColorModeValue('#1F3828', '#D4E6DA')
 
-  const baseShadow = useColorModeValue(
-    '0 2px 10px rgba(25, 59, 40, 0.05), 0 1px 3px rgba(25, 59, 40, 0.03)',
-    '0 6px 18px rgba(5, 11, 8, 0.45), 0 2px 4px rgba(5, 11, 8, 0.35)'
+  const cardShadow = useColorModeValue(
+    '0 2px 10px rgba(32, 51, 41, 0.04), 0 1px 2px rgba(32, 51, 41, 0.03)',
+    '0 6px 18px rgba(3, 8, 5, 0.45), 0 2px 4px rgba(3, 8, 5, 0.35)'
   )
   const hoverShadow = useColorModeValue(
-    '0 10px 24px rgba(25, 59, 40, 0.10), 0 3px 8px rgba(25, 59, 40, 0.05)',
-    '0 12px 28px rgba(5, 11, 8, 0.65), 0 4px 10px rgba(5, 11, 8, 0.45)'
+    '0 6px 16px rgba(32, 51, 41, 0.07), 0 2px 4px rgba(32, 51, 41, 0.04)',
+    '0 10px 22px rgba(3, 8, 5, 0.65), 0 3px 6px rgba(3, 8, 5, 0.45)'
   )
 
+  const resolvedBg = isActive
+    ? activeSurface
+    : surface === 'cream'
+    ? creamSurface
+    : sageSurface
+
+  let statusAccent = primaryGreen
+  let badgeBg = infoBadgeBg
+  let badgeColor = infoBadgeText
+
+  if (status === 'Risiko terindikasi') {
+    statusAccent = redAccent
+    badgeBg = redBadgeBg
+    badgeColor = redBadgeText
+  } else if (status === 'Perlu perhatian') {
+    statusAccent = amberAccent
+    badgeBg = amberBadgeBg
+    badgeColor = amberBadgeText
+  } else if (
+    status === 'Perlu informasi tambahan' ||
+    status === 'Tidak dapat dinilai'
+  ) {
+    statusAccent = infoAccent
+    badgeBg = infoBadgeBg
+    badgeColor = infoBadgeText
+  }
+
   const isInteractive = typeof onClick === 'function'
-  const isKpi = variant === 'kpi' || metricValue !== null
 
   const handleKeyDown = (event) => {
     if (!isInteractive) return
@@ -74,39 +95,41 @@ function Card({
 
   return (
     <Flex
-      data-theme-transition="true"
+      data-cupi-el="true"
       direction="column"
       justify="space-between"
       pos="relative"
       overflow="hidden"
       w="100%"
-      p={compact ? 4 : { base: 5, sm: 6 }}
+      p={compact ? { base: 3.5, sm: 4 } : { base: 5, sm: 6 }}
       bg={resolvedBg}
       color={textMain}
       borderRadius={compact ? 'xl' : '2xl'}
       border="1px solid"
-      borderColor={isActive ? borderActive : borderDefault}
-      boxShadow={baseShadow}
+      borderColor={
+        isActive ? borderActive : status ? statusAccent : borderDefault
+      }
+      boxShadow={cardShadow}
       cursor={isInteractive ? 'pointer' : 'default'}
       userSelect={isInteractive ? 'none' : 'auto'}
       role={isInteractive ? 'button' : undefined}
       tabIndex={isInteractive ? 0 : undefined}
       onClick={onClick}
       onKeyDown={handleKeyDown}
-      transition="background-color 0.48s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease, color 0.4s ease, box-shadow 0.25s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)"
+      transition="background-color 0.34s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.22s ease, transform 0.18s cubic-bezier(0.22, 1, 0.36, 1)"
       _hover={
         isInteractive
           ? {
-              transform: 'translateY(-3px)',
-              borderColor: borderHover,
+              transform: 'translateY(-1.5px)',
               boxShadow: hoverShadow,
+              borderColor: status ? statusAccent : borderActive,
             }
           : undefined
       }
       _active={
         isInteractive
           ? {
-              transform: 'translateY(0px) scale(0.99)',
+              transform: 'translateY(0)',
             }
           : undefined
       }
@@ -114,198 +137,110 @@ function Card({
         isInteractive
           ? {
               outline: '2px solid',
-              outlineColor: accentColor,
+              outlineColor: primaryGreen,
               outlineOffset: '2px',
             }
           : undefined
       }
       {...rest}
     >
-      {/* Indikator Samping Halus untuk Featured Card atau Card yang Sedang Aktif */}
-      {(variant === 'featured' || isActive) && (
+      {/* Garis Penanda Status di Sisi Kiri Hanya Jika Kartu Memiliki Status Keamanan Pangan */}
+      {status && (
         <Box
           pos="absolute"
           top={0}
           bottom={0}
           left={0}
-          w={variant === 'featured' ? '5px' : '3.5px'}
-          bg={accentColor}
+          w="4px"
+          bg={statusAccent}
         />
       )}
 
-      <Box pl={variant === 'featured' || isActive ? 1.5 : 0}>
-        {/* Anatomi 1: KPI / Stat Card */}
-        {isKpi ? (
-          <Box>
-            <Flex align="center" justify="space-between" gap={2} mb={2.5}>
-              <Text
-                fontSize="xs"
-                fontWeight="bold"
-                color={textMuted}
-                letterSpacing="0.02em"
-              >
-                {title}
-              </Text>
+      <Box pl={status ? 1.5 : 0}>
+        {(title || subtitle || icon || badge || headerAction) && (
+          <Flex
+            align="flex-start"
+            justify="space-between"
+            gap={3}
+            mb={description || children ? (compact ? 2.5 : 4) : 0}
+            flexWrap="wrap"
+          >
+            <HStack spacing={3} align="flex-start">
               {icon && (
                 <Flex
-                  data-theme-transition="true"
-                  w="34px"
-                  h="34px"
+                  w="36px"
+                  h="36px"
+                  flexShrink={0}
                   align="center"
                   justify="center"
                   borderRadius="lg"
-                  bg={isActive ? iconActiveBg : iconSurface}
-                  color={isActive ? iconActiveColor : textMain}
+                  bg={creamSurface}
+                  color={primaryGreen}
+                  border="1px solid"
+                  borderColor={borderDefault}
                 >
                   {icon}
                 </Flex>
               )}
-            </Flex>
 
-            <HStack align="baseline" spacing={1.5} my={1}>
-              <Text
-                fontFamily="'Figtree', 'IBM Plex Sans', sans-serif"
-                fontSize={{ base: '2xl', md: '3xl' }}
-                fontWeight="extrabold"
-                color={textMain}
-                lineHeight="1.1"
-              >
-                {metricValue}
-              </Text>
-              {metricUnit && (
-                <Text fontSize="sm" fontWeight="bold" color={accentColor}>
-                  {metricUnit}
-                </Text>
-              )}
+              <Box>
+                {title && (
+                  <Text
+                    fontFamily="'Figtree', sans-serif"
+                    fontSize={compact ? 'sm' : { base: 'md', sm: 'lg' }}
+                    fontWeight="bold"
+                    color={textMain}
+                    lineHeight="1.3"
+                  >
+                    {title}
+                  </Text>
+                )}
+                {subtitle && (
+                  <Text fontSize="xs" color={textMuted} mt={0.5}>
+                    {subtitle}
+                  </Text>
+                )}
+              </Box>
             </HStack>
 
-            {metricSubtext && (
-              <Text fontSize="11px" color={textMuted} mt={1.5} lineHeight="1.4">
-                {metricSubtext}
-              </Text>
-            )}
-          </Box>
-        ) : (
-          /* Anatomi 2: Featured, Panel, atau Navigation Card */
-          <Box>
-            <Flex
-              align="flex-start"
-              justify="space-between"
-              gap={3}
-              mb={description || children ? 2.5 : 0}
-            >
-              <HStack spacing={3} align="center">
-                {icon && (
-                  <Flex
-                    data-theme-transition="true"
-                    w={compact ? '38px' : '42px'}
-                    h={compact ? '38px' : '42px'}
-                    flexShrink={0}
-                    align="center"
-                    justify="center"
-                    borderRadius="lg"
-                    bg={isActive || variant === 'featured' ? iconActiveBg : iconSurface}
-                    color={
-                      isActive || variant === 'featured' ? iconActiveColor : textMain
-                    }
-                    transition="transform 0.2s ease, background-color 0.3s ease"
-                  >
-                    {icon}
-                  </Flex>
-                )}
-
-                <Box>
-                  {variant === 'featured' && (
-                    <Text
-                      fontSize="11px"
-                      fontWeight="bold"
-                      textTransform="uppercase"
-                      letterSpacing="0.07em"
-                      color={accentColor}
-                      mb={0.5}
-                    >
-                      Modul Utama PROYEK.ID
-                    </Text>
-                  )}
-                  {title && (
-                    <Text
-                      fontFamily="'Figtree', 'IBM Plex Sans', sans-serif"
-                      fontSize={
-                        variant === 'featured'
-                          ? { base: 'lg', sm: 'xl' }
-                          : compact
-                          ? 'sm'
-                          : 'md'
-                      }
-                      fontWeight="bold"
-                      color={textMain}
-                      lineHeight="1.3"
-                    >
-                      {title}
-                    </Text>
-                  )}
-                </Box>
-              </HStack>
-
-              {badge ? (
+            <HStack spacing={2} flexWrap="wrap">
+              {headerAction}
+              {badge && (
                 <Box
-                  data-theme-transition="true"
                   px={2.5}
                   py={0.5}
-                  borderRadius="full"
+                  borderRadius="md"
                   bg={badgeBg}
                   border="1px solid"
-                  borderColor={isActive ? borderActive : borderDefault}
+                  borderColor={statusAccent}
                   fontSize="11px"
                   fontWeight="bold"
-                  color={textMain}
+                  color={badgeColor}
                   flexShrink={0}
                 >
                   {badge}
                 </Box>
-              ) : (
-                isInteractive && (
-                  <Box as="span" color={textMuted} opacity={0.75} aria-hidden="true" mt={1}>
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M7 17L17 7" />
-                      <path d="M7 7h10v10" />
-                    </svg>
-                  </Box>
-                )
               )}
-            </Flex>
-
-            {description && (
-              <Text
-                fontSize={compact ? 'xs' : 'sm'}
-                color={textMuted}
-                lineHeight="1.6"
-              >
-                {description}
-              </Text>
-            )}
-
-            {children && <Box mt={3}>{children}</Box>}
-          </Box>
+            </HStack>
+          </Flex>
         )}
+
+        {description && (
+          <Text fontSize="xs" color={textMuted} lineHeight="1.6">
+            {description}
+          </Text>
+        )}
+
+        {children && <Box mt={description ? 3 : 0}>{children}</Box>}
       </Box>
 
       {footer && (
         <Box
-          pl={variant === 'featured' || isActive ? 1.5 : 0}
-          mt={4}
+          pl={status ? 1.5 : 0}
+          mt={compact ? 3 : 5}
           pt={3}
           borderTop="1px solid"
-          borderColor={dividerColor}
+          borderColor={borderDefault}
         >
           {footer}
         </Box>
